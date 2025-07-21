@@ -29,130 +29,118 @@
             --secondary-bg-color: #1A1A1A;
             --border-color: #333333;
         }
-        /* Base Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: var(--secondary-bg-color); color: var(--text-color); }
         .app-container { width: 100%; height: 100%; max-width: 450px; max-height: 900px; background-color: var(--bg-color); border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; position: relative; overflow: hidden; }
         .hidden { display: none !important; }
         
-        /* Main View Structure */
         .view { display: none; flex-direction: column; height: 100%; width: 100%; }
         .view.active { display: flex; }
 
-        /* Auth View Styling */
-        #auth-view {
-            justify-content: center; align-items: center; padding: 2rem;
-        }
+        #auth-view { justify-content: center; align-items: center; padding: 2rem; }
         #auth-view h1 { font-size: 40px; font-weight: 700; color: var(--accent-color); margin-bottom: 2.5rem; }
         .auth-form { width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 1rem; }
         .auth-form input { width: 100%; padding: 14px 25px; border-radius: 25px; border: 2px solid var(--accent-color); background: transparent; color: var(--text-color); font-size: 1rem; outline: none; }
-        
-        /* Input placeholder fix */
         .auth-form input::placeholder { color: var(--text-color); opacity: 0.6; }
-
         .auth-form button { padding: 14px; border-radius: 50px; border: none; background: var(--accent-color); color: var(--button-text-color); font-weight: bold; font-size: 1rem; cursor: pointer; }
         .auth-toggle-link { text-align: center; margin-top: 1rem; font-size: 13px; color: var(--text-color); }
         .auth-toggle-link a { color: var(--accent-color); font-weight: 600; text-decoration: underline; cursor: pointer; }
         .auth-error { color: #ff3b30; font-size: 0.8rem; text-align: center; height: 1.2rem; margin-top: -0.5rem; }
 
-        /* Logged-In View Styling */
         .top-nav-bar { position: absolute; top: 0; left: 0; width: 100%; height: 55px; background-color: var(--bg-color); border-bottom: 1px solid var(--border-color); display: flex; overflow-x: auto; z-index: 50; white-space: nowrap; }
         .top-nav-bar::-webkit-scrollbar { display: none; }
-        .top-nav-bar { -ms-overflow-style: none; scrollbar-width: none; }
-        .top-nav-btn { padding: 0 20px; height: 100%; border: none; background: none; cursor: pointer; font-size: 1rem; font-weight: 600; color: var(--text-color); opacity: 0.7; display: flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s ease; flex-shrink: 0; }
+        .top-nav-btn { padding: 0 15px; height: 100%; border: none; background: none; cursor: pointer; font-size: 1rem; font-weight: 600; color: var(--text-color); opacity: 0.7; display: flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s ease; flex-shrink: 0; }
         .top-nav-btn.active { color: var(--accent-color); border-bottom-color: var(--accent-color); opacity: 1; }
         
-        /* Layout overlap fix */
         .main-content { flex-grow: 1; overflow-y: auto; padding-top: 55px; display: flex; flex-direction: column; }
-        
         .tab-content { display: none; flex-direction: column; height: 100%; }
         .tab-content.active { display: flex; }
         .inner-content { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+        .tab-content h3 { color: var(--text-color); padding: 0.5rem 1rem; margin-bottom: 0.5rem; font-size: 1.2rem; }
+        
         .story-bar { display: flex; gap: 10px; padding: 1rem; overflow-x: auto; border-bottom: 1px solid var(--border-color); background-color: var(--bg-color); }
         .story-circle { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
         .story-circle-img-container { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--accent-color); padding: 2px; display: flex; justify-content: center; align-items: center; }
         .story-circle-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background-color: var(--secondary-bg-color); }
-        .story-circle-name { font-size: 0.7rem; color: var(--text-color); }
+        
         .post-card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1rem; }
         .post-header { display: flex; align-items: center; gap: 10px; padding: 10px; }
         .post-author-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: var(--secondary-bg-color); }
-        .post-author-info .name { font-weight: 600; }
-        .post-author-info .time { font-size: 0.75rem; opacity: 0.7; }
         .post-content { padding: 0 10px 10px; }
-        .post-content p { word-wrap: break-word; }
         .post-media { max-width: 100%; max-height: 400px; display: block; margin: 10px auto; border-radius: 8px; }
+        
         .profile-header { position: relative; height: 200px; }
         .profile-cover-img { width: 100%; height: 100%; object-fit: cover; background-color: var(--secondary-bg-color); }
         .profile-avatar-container { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); }
         .profile-avatar { width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--bg-color); object-fit: cover; }
         .profile-info { text-align: center; padding: 60px 20px 20px; }
         .profile-info button { padding: 8px 20px; border-radius: 20px; border: none; font-weight: 600; cursor: pointer; }
+        
+        .list-item { display: flex; align-items: center; padding: 0.8rem; background-color: var(--secondary-bg-color); border-radius: 10px; gap: 1rem; }
+        .item-info { flex-grow: 1; }
+        .item-info .name { font-weight: 600; }
+        .item-info .detail { font-size: 0.8rem; opacity: 0.7; }
+        .item-actions button { padding: 5px 12px; border-radius: 15px; border: none; background-color: var(--accent-color); color: var(--button-text-color); font-weight: 600; cursor: pointer; }
+        
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 200; }
         .modal-content { width: 90%; max-width: 400px; padding: 2rem; border-radius: 20px; background-color: var(--bg-color); display: flex; flex-direction: column; gap: 1rem; }
-        .modal-content h3 { color: var(--text-color); text-align: center; font-size: 1.5rem; }
-        .modal-content textarea { width: 100%; min-height: 80px; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); }
-        .modal-content input[type="file"] { border: none; }
-        .modal-content button { padding: 12px; border-radius: 50px; border: none; background: var(--accent-color); color: var(--button-text-color); font-weight: bold; cursor: pointer; }
-        .modal-content .secondary-btn { background-color: var(--secondary-bg-color); color: var(--text-color); }
     </style>
 </head>
 <body>
     <div class="app-container">
         <!-- Auth View -->
         <div id="auth-view" class="view active">
-            <div id="login-form" class="auth-form">
-                <h1>RahatConnect</h1>
-                <input type="email" id="login-email" placeholder="Email">
-                <input type="password" id="login-password" placeholder="Password">
-                <div class="auth-error" id="login-error"></div>
-                <button id="login-btn">Login</button>
-                <p class="auth-toggle-link">No account? <a id="show-signup">Signup</a></p>
-            </div>
-            <div id="signup-form" class="auth-form hidden">
-                <h1>RahatConnect</h1>
-                <input type="email" id="signup-email" placeholder="Email">
-                <input type="password" id="signup-password" placeholder="Password">
-                <div class="auth-error" id="signup-error"></div>
-                <button id="signup-btn">Signup</button>
-                <p class="auth-toggle-link">Have an account? <a id="show-login">Login</a></p>
-            </div>
+            <!-- Auth form content -->
         </div>
 
         <!-- Main App View -->
         <div id="main-app-view" class="view">
             <nav class="top-nav-bar">
                 <button class="top-nav-btn active" data-tab="home-tab">Home</button>
-                <button class="top-nav-btn" data-tab="create-post-tab">Post</button>
+                <button class="top-nav-btn" data-tab="friends-tab">Friends</button>
+                <button class="top-nav-btn" data-tab="search-tab">Search</button>
                 <button class="top-nav-btn" data-tab="profile-tab">Profile</button>
+                <button class="top-nav-btn" data-tab="post-tab">Post</button>
             </nav>
             <main class="main-content">
                 <div id="home-tab" class="tab-content active">
-                    <div class="story-bar" id="story-bar">
-                        <div class="story-circle" id="add-story-btn">
-                            <div class="story-circle-img-container">
-                                <span style="font-size: 2rem; color: var(--accent-color);">+</span>
-                            </div>
-                            <span class="story-circle-name">Your Story</span>
-                        </div>
-                    </div>
+                    <div class="story-bar" id="story-bar"></div>
                     <div class="inner-content" id="feed-container"></div>
                 </div>
+                <div id="friends-tab" class="tab-content">
+                    <div class="inner-content">
+                        <h3>Friend Requests</h3>
+                        <div id="friend-requests-container"></div>
+                        <h3>Suggestions</h3>
+                        <div id="friend-suggestions-container"></div>
+                    </div>
+                </div>
+                <div id="search-tab" class="tab-content">
+                    <div class="inner-content">
+                        <h3>Find Friends</h3>
+                        <p>Search by @username or Friend Code (e.g., Connect-1234)</p>
+                        <div style="display:flex; gap: 5px;"><input type="text" id="search-input" placeholder="Enter username or code..." style="flex-grow:1; padding: 10px; border-radius:20px; border: 1px solid var(--border-color);"><button id="search-btn">Search</button></div>
+                        <div id="search-results-container"></div>
+                    </div>
+                </div>
                 <div id="profile-tab" class="tab-content">
-                     <div style="flex-grow: 1; overflow-y: auto;">
+                    <div style="flex-grow: 1; overflow-y: auto;">
                         <div class="profile-header">
-                            <img id="profile-cover-img" src="https://via.placeholder.com/450x200?text=Cover" class="profile-cover-img">
+                            <img id="profile-cover-img" class="profile-cover-img">
                             <div class="profile-avatar-container">
-                               <img id="profile-avatar-img" src="https://via.placeholder.com/80?text=Avatar" class="profile-avatar">
+                               <img id="profile-avatar-img" class="profile-avatar">
                             </div>
                         </div>
                         <div class="profile-info">
-                            <h2 id="profile-main-name">User Name</h2>
-                            <p id="profile-main-username">@username</p>
+                            <h2 id="profile-main-name"></h2>
+                            <p id="profile-main-username"></p>
+                            <p id="profile-main-friendcode"></p>
                             <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
                                 <button id="edit-profile-btn">Edit Profile</button>
                                 <button id="logout-btn" style="background-color: #ff3b30; color: white;">Logout</button>
                             </div>
                         </div>
+                        <div class="inner-content" id="user-posts-container"><h3>My Posts</h3></div>
                     </div>
                 </div>
             </main>
@@ -170,28 +158,17 @@
             <button class="secondary-btn" onclick="showModal('create-post-modal', false)">Cancel</button>
         </div>
     </div>
-    
-    <div id="add-story-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3>Add to your Story</h3>
-            <input type="file" id="story-media-input" accept="image/*">
-            <button id="submit-story-btn">Post Story</button>
-            <button class="secondary-btn" onclick="showModal('add-story-modal', false)">Cancel</button>
-        </div>
-    </div>
-
     <div id="edit-profile-modal" class="modal-overlay hidden">
-         <div class="modal-content">
+        <div class="modal-content">
             <h3>Edit Profile</h3>
             <label>Name</label><input type="text" id="edit-name-input">
             <label>Cover Image</label><input type="file" id="edit-cover-input" accept="image/*">
             <label>Profile Picture</label><input type="file" id="edit-avatar-input" accept="image/*">
             <hr>
             <label>Theme</label>
-            <select id="theme-select">
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-            </select>
+            <select id="theme-select"><option value="light">Light</option><option value="dark">Dark</option></select>
+            <label>Language</label>
+            <select id="language-select"><option value="en">English</option><option value="bn">Bangla</option></select>
             <button id="save-profile-changes-btn">Save</button>
             <button class="secondary-btn" onclick="showModal('edit-profile-modal', false)">Cancel</button>
         </div>
@@ -212,51 +189,17 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const firestore = firebase.firestore();
-
             let currentUser = null;
 
-            window.showModal = (id, show = true) => {
-                const modal = document.getElementById(id);
-                if(modal) modal.classList.toggle('hidden', !show);
-            };
-            
+            window.showModal = (id, show = true) => document.getElementById(id)?.classList.toggle('hidden', !show);
             const showView = id => {
                 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                const view = document.getElementById(id);
-                if (view) view.classList.add('active');
+                document.getElementById(id)?.classList.add('active');
             };
-
             const applyTheme = theme => {
                 document.body.classList.toggle('dark-mode', theme === 'dark');
                 localStorage.setItem('rahatconnect-theme', theme);
             };
-
-            auth.onAuthStateChanged(async user => {
-                if (user) {
-                    const userDocRef = firestore.collection('users').doc(user.uid);
-                    let userDoc = await userDocRef.get();
-                    if (!userDoc.exists) {
-                        const initialProfile = { name: user.email.split('@')[0], email: user.email, avatarUrl: '', coverUrl: '' };
-                        await userDocRef.set(initialProfile, { merge: true });
-                        currentUser = { uid: user.uid, ...initialProfile };
-                    } else {
-                        currentUser = { uid: user.uid, ...userDoc.data() };
-                    }
-                    initializeApp();
-                } else {
-                    currentUser = null;
-                    showView('auth-view');
-                }
-            });
-
-            function initializeApp() {
-                showView('main-app-view');
-                const savedTheme = localStorage.getItem('rahatconnect-theme') || 'light';
-                applyTheme(savedTheme);
-                document.getElementById('theme-select').value = savedTheme;
-                renderFeed();
-                updateProfileView();
-            }
 
             const fileToBase64 = file => new Promise((resolve, reject) => {
                 if (file.size > 750000) return reject(new Error("Image is too large (max 750KB)."));
@@ -266,119 +209,202 @@
                 reader.onerror = error => reject(error);
             });
 
-            // Navigation
-            document.querySelector('.top-nav-bar').addEventListener('click', e => {
-                const button = e.target.closest('.top-nav-btn');
-                if (!button) return;
-                const tabId = button.dataset.tab;
-                if (tabId === 'create-post-tab') return showModal('create-post-modal');
-                document.querySelectorAll('.top-nav-btn').forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-                document.getElementById(tabId)?.classList.add('active');
+            auth.onAuthStateChanged(async user => {
+                if (user) {
+                    const userDocRef = firestore.collection('users').doc(user.uid);
+                    let userDoc = await userDocRef.get();
+                    if (!userDoc.exists) {
+                        const name = user.email.split('@')[0];
+                        const initialProfile = { name, email: user.email, username: `@${name}`, friendCode: `Connect-${Math.floor(1000 + Math.random() * 9000)}`, avatarUrl: '', coverUrl: '' };
+                        await userDocRef.set(initialProfile);
+                        currentUser = { uid: user.uid, ...initialProfile };
+                    } else {
+                        currentUser = { uid: user.uid, ...userDoc.data() };
+                    }
+                    initializeApp();
+                } else {
+                    currentUser = null;
+                    document.getElementById('auth-view').innerHTML = `
+                        <div id="login-form" class="auth-form">
+                            <h1>RahatConnect</h1>
+                            <input type="email" id="login-email" placeholder="Email"><input type="password" id="login-password" placeholder="Password">
+                            <div class="auth-error" id="login-error"></div><button id="login-btn">Login</button>
+                            <p class="auth-toggle-link">No account? <a id="show-signup">Signup</a></p>
+                        </div>
+                        <div id="signup-form" class="auth-form hidden">
+                            <h1>RahatConnect</h1>
+                            <input type="email" id="signup-email" placeholder="Email"><input type="password" id="signup-password" placeholder="Password">
+                            <div class="auth-error" id="signup-error"></div><button id="signup-btn">Signup</button>
+                            <p class="auth-toggle-link">Have an account? <a id="show-login">Login</a></p>
+                        </div>`;
+                    document.getElementById('show-signup').addEventListener('click', () => { document.getElementById('login-form').classList.add('hidden'); document.getElementById('signup-form').classList.remove('hidden'); });
+                    document.getElementById('show-login').addEventListener('click', () => { document.getElementById('login-form').classList.remove('hidden'); document.getElementById('signup-form').classList.add('hidden'); });
+                    document.getElementById('login-btn').addEventListener('click', () => auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value).catch(e => document.getElementById('login-error').textContent = e.message));
+                    document.getElementById('signup-btn').addEventListener('click', () => auth.createUserWithEmailAndPassword(document.getElementById('signup-email').value, document.getElementById('signup-password').value).catch(e => document.getElementById('signup-error').textContent = e.message));
+                    showView('auth-view');
+                }
             });
 
-            // Auth
-            document.getElementById('show-signup').addEventListener('click', () => {
-                document.getElementById('login-form').classList.add('hidden');
-                document.getElementById('signup-form').classList.remove('hidden');
-            });
-            document.getElementById('show-login').addEventListener('click', () => {
-                document.getElementById('login-form').classList.remove('hidden');
-                document.getElementById('signup-form').classList.add('hidden');
-            });
-            document.getElementById('login-btn').addEventListener('click', () => auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value).catch(e => document.getElementById('login-error').textContent = e.message));
-            document.getElementById('signup-btn').addEventListener('click', () => auth.createUserWithEmailAndPassword(document.getElementById('signup-email').value, document.getElementById('signup-password').value).catch(e => document.getElementById('signup-error').textContent = e.message));
-            document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+            function initializeApp() {
+                showView('main-app-view');
+                const savedTheme = localStorage.getItem('rahatconnect-theme') || 'light';
+                applyTheme(savedTheme);
+                document.getElementById('theme-select').value = savedTheme;
+                attachNavListeners();
+                attachProfileListeners();
+                attachPostListeners();
+                loadAllData();
+            }
+            
+            function loadAllData() {
+                renderFeed();
+                renderFriendRequests();
+                renderFriendSuggestions();
+                updateProfileView();
+            }
+            
+            function attachNavListeners() {
+                document.querySelector('.top-nav-bar').addEventListener('click', e => {
+                    const button = e.target.closest('.top-nav-btn');
+                    if (!button) return;
+                    const tabId = button.dataset.tab;
+                    if (tabId === 'post-tab') return showModal('create-post-modal');
+                    document.querySelectorAll('.top-nav-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                    document.getElementById(tabId)?.classList.add('active');
+                });
+            }
 
-            // Profile
+            function attachProfileListeners() {
+                document.getElementById('edit-profile-btn').onclick = () => { document.getElementById('edit-name-input').value = currentUser.name; showModal('edit-profile-modal'); };
+                document.getElementById('logout-btn').onclick = () => auth.signOut();
+                document.getElementById('save-profile-changes-btn').onclick = async () => {
+                    const updates = { name: document.getElementById('edit-name-input').value };
+                    const coverFile = document.getElementById('edit-cover-input').files[0];
+                    const avatarFile = document.getElementById('edit-avatar-input').files[0];
+                    try {
+                        if (coverFile) updates.coverUrl = await fileToBase64(coverFile);
+                        if (avatarFile) updates.avatarUrl = await fileToBase64(avatarFile);
+                        await firestore.collection('users').doc(currentUser.uid).update(updates);
+                        currentUser = {...currentUser, ...updates};
+                        updateProfileView();
+                        showModal('edit-profile-modal', false);
+                    } catch (error) { alert(error.message); }
+                };
+                 document.getElementById('theme-select').onchange = (e) => applyTheme(e.target.value);
+            }
+
             function updateProfileView() {
-                if(!currentUser) return;
+                const defaultAvatar = `https://ui-avatars.com/api/?name=${currentUser.name[0]}&background=FFD700&color=000`;
                 document.getElementById('profile-main-name').textContent = currentUser.name;
-                document.getElementById('profile-main-username').textContent = currentUser.username || '';
-                const defaultAvatar = `https://ui-avatars.com/api/?name=${currentUser.name || 'R'}&background=FFD700&color=000`;
+                document.getElementById('profile-main-username').textContent = currentUser.username;
+                document.getElementById('profile-main-friendcode').textContent = currentUser.friendCode;
                 document.getElementById('profile-avatar-img').src = currentUser.avatarUrl || defaultAvatar;
                 document.getElementById('profile-cover-img').src = currentUser.coverUrl || 'https://via.placeholder.com/450x200?text=Cover';
             }
-            document.getElementById('edit-profile-btn').addEventListener('click', () => {
-                 document.getElementById('edit-name-input').value = currentUser.name;
-                 showModal('edit-profile-modal');
-            });
-            document.getElementById('save-profile-changes-btn').addEventListener('click', async () => {
-                const updates = { name: document.getElementById('edit-name-input').value };
-                const coverFile = document.getElementById('edit-cover-input').files[0];
-                const avatarFile = document.getElementById('edit-avatar-input').files[0];
-                const theme = document.getElementById('theme-select').value;
-                try {
-                    if (coverFile) updates.coverUrl = await fileToBase64(coverFile);
-                    if (avatarFile) updates.avatarUrl = await fileToBase64(avatarFile);
-                    await firestore.collection('users').doc(currentUser.uid).update(updates);
-                    currentUser = {...currentUser, ...updates};
-                    updateProfileView(); applyTheme(theme);
-                    showModal('edit-profile-modal', false); alert('Profile updated!');
-                } catch (error) { console.error("Error updating profile:", error); alert(error.message); }
-            });
             
-            // Social Feed
-            document.getElementById('submit-post-btn').addEventListener('click', async () => {
-                const text = document.getElementById('post-text-input').value.trim();
-                const mediaFile = document.getElementById('post-media-input').files[0];
-                if (!text && !mediaFile) return alert('Post cannot be empty.');
-                const postBtn = document.getElementById('submit-post-btn');
-                postBtn.disabled = true; postBtn.textContent = 'Posting...';
-                try {
-                    let mediaDataUrl = '';
-                    if (mediaFile) mediaDataUrl = await fileToBase64(mediaFile);
-                    await firestore.collection('posts').add({
-                        authorId: currentUser.uid, authorName: currentUser.name, authorAvatar: currentUser.avatarUrl,
-                        text, mediaUrl: mediaDataUrl,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    showModal('create-post-modal', false);
-                    document.getElementById('post-text-input').value = '';
-                    document.getElementById('post-media-input').value = '';
-                } catch (error) { console.error("Error creating post:", error); alert(error.message); }
-                finally { postBtn.disabled = false; postBtn.textContent = 'Post'; }
-            });
+            function attachPostListeners() {
+                document.getElementById('submit-post-btn').onclick = async () => {
+                    const text = document.getElementById('post-text-input').value.trim();
+                    const mediaFile = document.getElementById('post-media-input').files[0];
+                    if (!text && !mediaFile) return alert('Post is empty.');
+                    const postBtn = document.getElementById('submit-post-btn');
+                    postBtn.disabled = true; postBtn.textContent = 'Posting...';
+                    try {
+                        const post = { authorId: currentUser.uid, authorName: currentUser.name, authorAvatar: currentUser.avatarUrl, text, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
+                        if (mediaFile) post.mediaUrl = await fileToBase64(mediaFile);
+                        await firestore.collection('posts').add(post);
+                        showModal('create-post-modal', false);
+                    } catch (error) { alert(error.message); }
+                    finally { postBtn.disabled = false; postBtn.textContent = 'Post'; }
+                };
+            }
 
             function renderFeed() {
                 firestore.collection('posts').orderBy('timestamp', 'desc').limit(20).onSnapshot(snapshot => {
                     const feedContainer = document.getElementById('feed-container');
                     feedContainer.innerHTML = '';
-                    snapshot.forEach(doc => feedContainer.appendChild(createPostElement(doc.data(), doc.id)));
+                    snapshot.forEach(doc => feedContainer.appendChild(createPostElement(doc.data())));
                 });
             }
-
-            function createPostElement(post, postId) {
-                const card = document.createElement('div');
-                card.className = 'post-card';
+            
+            function createPostElement(post) {
+                const card = document.createElement('div'); card.className = 'post-card';
                 const time = post.timestamp ? new Date(post.timestamp.toDate()).toLocaleString() : 'Just now';
-                const defaultAvatar = `https://ui-avatars.com/api/?name=${post.authorName || 'R'}`;
-                let mediaHTML = post.mediaUrl ? `<img src="${post.mediaUrl}" class="post-media">` : '';
-                card.innerHTML = `
-                    <div class="post-header">
-                        <img src="${post.authorAvatar || defaultAvatar}" class="post-author-img">
-                        <div class="post-author-info"><div class="name">${post.authorName}</div><div class="time">${time}</div></div>
-                    </div>
-                    <div class="post-content"><p>${post.text}</p>${mediaHTML}</div>`;
+                const defaultAvatar = `https://ui-avatars.com/api/?name=${post.authorName[0]}`;
+                card.innerHTML = `<div class="post-header"><img src="${post.authorAvatar || defaultAvatar}" class="post-author-img"><div class="post-author-info"><div class="name">${post.authorName}</div><div class="time">${time}</div></div></div><div class="post-content"><p>${post.text}</p>${post.mediaUrl ? `<img src="${post.mediaUrl}" class="post-media">` : ''}</div>`;
                 return card;
             }
 
-            // Stories
-            document.getElementById('add-story-btn').addEventListener('click', () => showModal('add-story-modal'));
-            document.getElementById('submit-story-btn').addEventListener('click', async () => {
-                const mediaFile = document.getElementById('story-media-input').files[0];
-                if (!mediaFile) return alert('Please select a file.');
-                try {
-                    const mediaDataUrl = await fileToBase64(mediaFile);
-                    await firestore.collection('stories').add({
-                        authorId: currentUser.uid, authorName: currentUser.name, authorAvatar: currentUser.avatarUrl,
-                        mediaUrl: mediaDataUrl,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            // Friend System
+            document.getElementById('search-btn').onclick = async () => {
+                const query = document.getElementById('search-input').value.trim();
+                const resultsContainer = document.getElementById('search-results-container');
+                resultsContainer.innerHTML = 'Searching...';
+                let q;
+                if(query.startsWith('@')) q = firestore.collection('users').where('username', '==', query);
+                else if(query.toLowerCase().startsWith('connect-')) q = firestore.collection('users').where('friendCode', '==', query);
+                else return resultsContainer.innerHTML = 'Invalid query format.';
+                
+                const snapshot = await q.get();
+                if(snapshot.empty) return resultsContainer.innerHTML = 'No users found.';
+                
+                resultsContainer.innerHTML = '';
+                snapshot.forEach(doc => {
+                    if(doc.id === currentUser.uid) return;
+                    const user = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'list-item';
+                    item.innerHTML = `<div class="item-info"><div class="name">${user.name}</div><div class="detail">${user.username}</div></div><div class="item-actions"><button data-uid="${doc.id}">Add Friend</button></div>`;
+                    item.querySelector('button').onclick = (e) => {
+                        firestore.collection('users').doc(doc.id).collection('requests').doc(currentUser.uid).set({ fromName: currentUser.name });
+                        e.target.textContent = 'Sent'; e.target.disabled = true;
+                    };
+                    resultsContainer.appendChild(item);
+                });
+            };
+
+            function renderFriendRequests() {
+                firestore.collection('users').doc(currentUser.uid).collection('requests').onSnapshot(snapshot => {
+                    const container = document.getElementById('friend-requests-container');
+                    container.innerHTML = snapshot.empty ? 'No new requests.' : '';
+                    snapshot.forEach(doc => {
+                        const req = doc.data();
+                        const item = document.createElement('div');
+                        item.className = 'list-item';
+                        item.innerHTML = `<div class="item-info"><div class="name">${req.fromName}</div></div><div class="item-actions"><button data-uid="${doc.id}">Accept</button></div>`;
+                        item.querySelector('button').onclick = async () => {
+                            await firestore.collection('users').doc(currentUser.uid).collection('friends').doc(doc.id).set({});
+                            await firestore.collection('users').doc(doc.id).collection('friends').doc(currentUser.uid).set({});
+                            await firestore.collection('users').doc(currentUser.uid).collection('requests').doc(doc.id).delete();
+                        };
+                        container.appendChild(item);
                     });
-                    showModal('add-story-modal', false);
-                } catch(e) { console.error(e); alert(e.message); }
-            });
+                });
+            }
+
+            async function renderFriendSuggestions() {
+                const friendsSnap = await firestore.collection('users').doc(currentUser.uid).collection('friends').get();
+                const friendIds = friendsSnap.docs.map(d => d.id);
+                const snapshot = await firestore.collection('users').limit(10).get();
+                const container = document.getElementById('friend-suggestions-container');
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    if (doc.id !== currentUser.uid && !friendIds.includes(doc.id)) {
+                        const user = doc.data();
+                        const item = document.createElement('div');
+                        item.className = 'list-item';
+                        item.innerHTML = `<div class="item-info"><div class="name">${user.name}</div></div><div class="item-actions"><button data-uid="${doc.id}">Add</button></div>`;
+                        item.querySelector('button').onclick = (e) => {
+                           firestore.collection('users').doc(doc.id).collection('requests').doc(currentUser.uid).set({ fromName: currentUser.name });
+                           e.target.textContent = 'Sent'; e.target.disabled = true;
+                        };
+                        container.appendChild(item);
+                    }
+                });
+            }
+
         })();
     </script>
 </body>
