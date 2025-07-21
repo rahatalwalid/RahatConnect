@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Firebase v8 SDKs (Storage SDK is NOT needed for this version) -->
+    <!-- Firebase v8 SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -29,28 +29,42 @@
             --secondary-bg-color: #1A1A1A;
             --border-color: #333333;
         }
-        /* All other CSS styles from the previous version remain the same... */
+        /* Base Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: var(--secondary-bg-color); color: var(--text-color); }
         .app-container { width: 100%; height: 100%; max-width: 450px; max-height: 900px; background-color: var(--bg-color); border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; position: relative; overflow: hidden; }
         .hidden { display: none !important; }
-        #auth-view { justify-content: center; align-items: center; padding: 2rem; flex-direction: column; width: 100%; height: 100%; }
+        
+        /* Main View Structure */
+        .view { display: none; flex-direction: column; height: 100%; width: 100%; }
+        .view.active { display: flex; }
+
+        /* Auth View Styling */
+        #auth-view {
+            justify-content: center; align-items: center; padding: 2rem;
+        }
         #auth-view h1 { font-size: 40px; font-weight: 700; color: var(--accent-color); margin-bottom: 2.5rem; }
         .auth-form { width: 100%; max-width: 350px; display: flex; flex-direction: column; gap: 1rem; }
         .auth-form input { width: 100%; padding: 14px 25px; border-radius: 25px; border: 2px solid var(--accent-color); background: transparent; color: var(--text-color); font-size: 1rem; outline: none; }
+        
+        /* Input placeholder fix */
         .auth-form input::placeholder { color: var(--text-color); opacity: 0.6; }
-        .auth-form button { padding: 14px; border-radius: 50px; border: none; background: var(--accent-color); color: var(--button-text-color); font-weight: bold; font-size: 1rem; cursor: pointer; transition: box-shadow 0.3s ease; }
-        .auth-form button:hover { box-shadow: 0 0 15px var(--glow-color); }
+
+        .auth-form button { padding: 14px; border-radius: 50px; border: none; background: var(--accent-color); color: var(--button-text-color); font-weight: bold; font-size: 1rem; cursor: pointer; }
         .auth-toggle-link { text-align: center; margin-top: 1rem; font-size: 13px; color: var(--text-color); }
         .auth-toggle-link a { color: var(--accent-color); font-weight: 600; text-decoration: underline; cursor: pointer; }
         .auth-error { color: #ff3b30; font-size: 0.8rem; text-align: center; height: 1.2rem; margin-top: -0.5rem; }
+
+        /* Logged-In View Styling */
         .top-nav-bar { position: absolute; top: 0; left: 0; width: 100%; height: 55px; background-color: var(--bg-color); border-bottom: 1px solid var(--border-color); display: flex; overflow-x: auto; z-index: 50; white-space: nowrap; }
         .top-nav-bar::-webkit-scrollbar { display: none; }
         .top-nav-bar { -ms-overflow-style: none; scrollbar-width: none; }
         .top-nav-btn { padding: 0 20px; height: 100%; border: none; background: none; cursor: pointer; font-size: 1rem; font-weight: 600; color: var(--text-color); opacity: 0.7; display: flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s ease; flex-shrink: 0; }
-        .top-nav-btn:hover { opacity: 1; background-color: var(--secondary-bg-color); }
         .top-nav-btn.active { color: var(--accent-color); border-bottom-color: var(--accent-color); opacity: 1; }
+        
+        /* Layout overlap fix */
         .main-content { flex-grow: 1; overflow-y: auto; padding-top: 55px; display: flex; flex-direction: column; }
+        
         .tab-content { display: none; flex-direction: column; height: 100%; }
         .tab-content.active { display: flex; }
         .inner-content { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
@@ -59,7 +73,6 @@
         .story-circle-img-container { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--accent-color); padding: 2px; display: flex; justify-content: center; align-items: center; }
         .story-circle-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background-color: var(--secondary-bg-color); }
         .story-circle-name { font-size: 0.7rem; color: var(--text-color); }
-        #story-viewer { position: fixed; top:0; left:0; width:100%; height:100%; background-color:#000; z-index: 1000; display: flex; flex-direction: column; }
         .post-card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1rem; }
         .post-header { display: flex; align-items: center; gap: 10px; padding: 10px; }
         .post-author-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: var(--secondary-bg-color); }
@@ -68,8 +81,6 @@
         .post-content { padding: 0 10px 10px; }
         .post-content p { word-wrap: break-word; }
         .post-media { max-width: 100%; max-height: 400px; display: block; margin: 10px auto; border-radius: 8px; }
-        .post-actions { display: flex; justify-content: space-around; padding: 8px; border-top: 1px solid var(--border-color); position: relative; }
-        .post-action-btn { background: none; border: none; color: var(--text-color); font-weight: 600; cursor: pointer; font-size: 0.9rem; padding: 5px; }
         .profile-header { position: relative; height: 200px; }
         .profile-cover-img { width: 100%; height: 100%; object-fit: cover; background-color: var(--secondary-bg-color); }
         .profile-avatar-container { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); }
@@ -86,7 +97,6 @@
     </style>
 </head>
 <body>
-
     <div class="app-container">
         <!-- Auth View -->
         <div id="auth-view" class="view active">
@@ -95,25 +105,25 @@
                 <input type="email" id="login-email" placeholder="Email">
                 <input type="password" id="login-password" placeholder="Password">
                 <div class="auth-error" id="login-error"></div>
-                <button id="login-btn" data-lang-key="login">Login</button>
-                <p class="auth-toggle-link"><span data-lang-key="noAccount">No account?</span> <a id="show-signup" data-lang-key="signup">Signup</a></p>
+                <button id="login-btn">Login</button>
+                <p class="auth-toggle-link">No account? <a id="show-signup">Signup</a></p>
             </div>
             <div id="signup-form" class="auth-form hidden">
                 <h1>RahatConnect</h1>
                 <input type="email" id="signup-email" placeholder="Email">
                 <input type="password" id="signup-password" placeholder="Password">
                 <div class="auth-error" id="signup-error"></div>
-                <button id="signup-btn" data-lang-key="signup">Signup</button>
-                <p class="auth-toggle-link"><span data-lang-key="haveAccount">Have an account?</span> <a id="show-login" data-lang-key="login">Login</a></p>
+                <button id="signup-btn">Signup</button>
+                <p class="auth-toggle-link">Have an account? <a id="show-login">Login</a></p>
             </div>
         </div>
 
         <!-- Main App View -->
         <div id="main-app-view" class="view">
             <nav class="top-nav-bar">
-                <button class="top-nav-btn active" data-tab="home-tab" data-lang-key="navHome">Home</button>
-                <button class="top-nav-btn" data-tab="create-post-tab" data-lang-key="navPost">Post</button>
-                <button class="top-nav-btn" data-tab="profile-tab" data-lang-key="navProfile">Profile</button>
+                <button class="top-nav-btn active" data-tab="home-tab">Home</button>
+                <button class="top-nav-btn" data-tab="create-post-tab">Post</button>
+                <button class="top-nav-btn" data-tab="profile-tab">Profile</button>
             </nav>
             <main class="main-content">
                 <div id="home-tab" class="tab-content active">
@@ -122,7 +132,7 @@
                             <div class="story-circle-img-container">
                                 <span style="font-size: 2rem; color: var(--accent-color);">+</span>
                             </div>
-                            <span class="story-circle-name" data-lang-key="yourStory">Your Story</span>
+                            <span class="story-circle-name">Your Story</span>
                         </div>
                     </div>
                     <div class="inner-content" id="feed-container"></div>
@@ -139,8 +149,8 @@
                             <h2 id="profile-main-name">User Name</h2>
                             <p id="profile-main-username">@username</p>
                             <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-                                <button id="edit-profile-btn" data-lang-key="editProfile">Edit Profile</button>
-                                <button id="logout-btn" data-lang-key="logout" style="background-color: #ff3b30; color: white;">Logout</button>
+                                <button id="edit-profile-btn">Edit Profile</button>
+                                <button id="logout-btn" style="background-color: #ff3b30; color: white;">Logout</button>
                             </div>
                         </div>
                     </div>
@@ -152,12 +162,12 @@
     <!-- Modals -->
     <div id="create-post-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 data-lang-key="createPost">Create Post</h3>
+            <h3>Create Post</h3>
             <textarea id="post-text-input" placeholder="What's on your mind?"></textarea>
-            <label data-lang-key="uploadMedia">Upload Photo</label>
+            <label>Upload Photo</label>
             <input type="file" id="post-media-input" accept="image/*">
-            <button id="submit-post-btn" data-lang-key="post">Post</button>
-            <button class="secondary-btn" onclick="showModal('create-post-modal', false)" data-lang-key="cancel">Cancel</button>
+            <button id="submit-post-btn">Post</button>
+            <button class="secondary-btn" onclick="showModal('create-post-modal', false)">Cancel</button>
         </div>
     </div>
     
@@ -177,11 +187,6 @@
             <label>Cover Image</label><input type="file" id="edit-cover-input" accept="image/*">
             <label>Profile Picture</label><input type="file" id="edit-avatar-input" accept="image/*">
             <hr>
-            <label>Language</label>
-            <select id="language-select">
-                <option value="en">English</option>
-                <option value="bn">Bangla (বাংলা)</option>
-            </select>
             <label>Theme</label>
             <select id="theme-select">
                 <option value="light">Light</option>
@@ -210,26 +215,17 @@
 
             let currentUser = null;
 
-            const translations = {
-                en: { login: "Login", signup: "Signup", noAccount: "No account?", haveAccount: "Have an account?", navHome: "Home", navPost: "Post", navProfile: "Profile", yourStory: "Your Story", createPost: "Create Post", uploadMedia: "Upload Photo", post: "Post", cancel: "Cancel", editProfile: "Edit Profile", logout: "Logout", myPosts: "My Posts" },
-                bn: { login: "লগইন", signup: "সাইনআপ", noAccount: "অ্যাকাউন্ট নেই?", haveAccount: "অ্যাকাউন্ট আছে?", navHome: "হোম", navPost: "পোস্ট", navProfile: "প্রোফাইল", yourStory: "আপনার স্টোরি", createPost: "পোস্ট তৈরি করুন", uploadMedia: "ছবি আপলোড করুন", post: "পোস্ট করুন", cancel: "বাতিল করুন", editProfile: "প্রোফাইল সম্পাদনা", logout: "লগআউট", myPosts: "আমার পোস্ট" }
-            };
-
             window.showModal = (id, show = true) => {
                 const modal = document.getElementById(id);
                 if(modal) modal.classList.toggle('hidden', !show);
             };
+            
             const showView = id => {
                 document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                document.getElementById(id)?.classList.add('active');
+                const view = document.getElementById(id);
+                if (view) view.classList.add('active');
             };
-            const setLanguage = lang => {
-                document.querySelectorAll('[data-lang-key]').forEach(el => {
-                    const key = el.dataset.langKey;
-                    if (translations[lang]?.[key]) el.textContent = translations[lang][key];
-                });
-                localStorage.setItem('rahatconnect-lang', lang);
-            };
+
             const applyTheme = theme => {
                 document.body.classList.toggle('dark-mode', theme === 'dark');
                 localStorage.setItem('rahatconnect-theme', theme);
@@ -240,12 +236,7 @@
                     const userDocRef = firestore.collection('users').doc(user.uid);
                     let userDoc = await userDocRef.get();
                     if (!userDoc.exists) {
-                        const initialProfile = {
-                            name: user.email.split('@')[0],
-                            email: user.email,
-                            avatarUrl: '',
-                            coverUrl: ''
-                        };
+                        const initialProfile = { name: user.email.split('@')[0], email: user.email, avatarUrl: '', coverUrl: '' };
                         await userDocRef.set(initialProfile, { merge: true });
                         currentUser = { uid: user.uid, ...initialProfile };
                     } else {
@@ -260,22 +251,15 @@
 
             function initializeApp() {
                 showView('main-app-view');
-                const savedLang = localStorage.getItem('rahatconnect-lang') || 'en';
                 const savedTheme = localStorage.getItem('rahatconnect-theme') || 'light';
-                setLanguage(savedLang);
                 applyTheme(savedTheme);
-                document.getElementById('language-select').value = savedLang;
                 document.getElementById('theme-select').value = savedTheme;
                 renderFeed();
                 updateProfileView();
             }
 
-            // --- Base64 File Handler ---
             const fileToBase64 = file => new Promise((resolve, reject) => {
-                // Size check for 1MB Firestore limit (Base64 is ~1.37x larger)
-                if (file.size > 750000) { // ~750KB limit for safety
-                    return reject(new Error("Image is too large. Please use a smaller file."));
-                }
+                if (file.size > 750000) return reject(new Error("Image is too large (max 750KB)."));
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = () => resolve(reader.result);
@@ -321,21 +305,16 @@
                  showModal('edit-profile-modal');
             });
             document.getElementById('save-profile-changes-btn').addEventListener('click', async () => {
-                const updates = {
-                    name: document.getElementById('edit-name-input').value,
-                };
+                const updates = { name: document.getElementById('edit-name-input').value };
                 const coverFile = document.getElementById('edit-cover-input').files[0];
                 const avatarFile = document.getElementById('edit-avatar-input').files[0];
-                const lang = document.getElementById('language-select').value;
                 const theme = document.getElementById('theme-select').value;
-
                 try {
                     if (coverFile) updates.coverUrl = await fileToBase64(coverFile);
                     if (avatarFile) updates.avatarUrl = await fileToBase64(avatarFile);
-                    
                     await firestore.collection('users').doc(currentUser.uid).update(updates);
                     currentUser = {...currentUser, ...updates};
-                    updateProfileView(); setLanguage(lang); applyTheme(theme);
+                    updateProfileView(); applyTheme(theme);
                     showModal('edit-profile-modal', false); alert('Profile updated!');
                 } catch (error) { console.error("Error updating profile:", error); alert(error.message); }
             });
@@ -350,10 +329,9 @@
                 try {
                     let mediaDataUrl = '';
                     if (mediaFile) mediaDataUrl = await fileToBase64(mediaFile);
-                    
                     await firestore.collection('posts').add({
                         authorId: currentUser.uid, authorName: currentUser.name, authorAvatar: currentUser.avatarUrl,
-                        text, mediaUrl: mediaDataUrl, mediaType: 'image', // Only images now
+                        text, mediaUrl: mediaDataUrl,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     showModal('create-post-modal', false);
@@ -377,7 +355,6 @@
                 const time = post.timestamp ? new Date(post.timestamp.toDate()).toLocaleString() : 'Just now';
                 const defaultAvatar = `https://ui-avatars.com/api/?name=${post.authorName || 'R'}`;
                 let mediaHTML = post.mediaUrl ? `<img src="${post.mediaUrl}" class="post-media">` : '';
-                
                 card.innerHTML = `
                     <div class="post-header">
                         <img src="${post.authorAvatar || defaultAvatar}" class="post-author-img">
@@ -396,13 +373,12 @@
                     const mediaDataUrl = await fileToBase64(mediaFile);
                     await firestore.collection('stories').add({
                         authorId: currentUser.uid, authorName: currentUser.name, authorAvatar: currentUser.avatarUrl,
-                        mediaUrl: mediaDataUrl, mediaType: 'image',
+                        mediaUrl: mediaDataUrl,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     showModal('add-story-modal', false);
                 } catch(e) { console.error(e); alert(e.message); }
             });
-
         })();
     </script>
 </body>
