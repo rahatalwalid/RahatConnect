@@ -19,7 +19,6 @@
             --bg-color: #FFFFFF;
             --text-color: #000000;
             --accent-color: #FFD700;
-            --accent-text-color: #000000;
             --button-text-color: #000000;
             --secondary-bg-color: #F5F5F5;
             --sent-bubble-bg: #FFD700;
@@ -31,7 +30,6 @@
             --bg-color: #000000;
             --text-color: #FFFFFF;
             --accent-color: #FFD700;
-            --accent-text-color: #000000;
             --button-text-color: #000000;
             --secondary-bg-color: #1A1A1A;
             --sent-bubble-bg: #FFD700;
@@ -93,7 +91,7 @@
             font-size: 40px;
             font-weight: 700;
             color: var(--accent-color);
-            text-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color);
+            /* text-shadow has been removed as requested */
             margin-bottom: 2.5rem;
         }
         .auth-form {
@@ -563,14 +561,14 @@
         document.addEventListener('DOMContentLoaded', () => {
 
             const firebaseConfig = {
-    apiKey: "AIzaSyCyi55rVrsBtF9HpqMWz2a4H4ggwSkJ6z4",
-    authDomain: "rahatconnect-e9755.firebaseapp.com",
-    databaseURL: "https://rahatconnect-e9755-default-rtdb.firebaseio.com",
-    projectId: "rahatconnect-e9755",
-    storageBucket: "rahatconnect-e9755.firebasestorage.app",
-    messagingSenderId: "326989187761",
-    appId: "1:326989187761:web:b2800fdbadb32b2a3af090"
-  }; 
+                apiKey: "AIzaSyCyi55rVrsBtF9HpqMWz2a4H4ggwSkJ6z4",
+                authDomain: "rahatconnect-e9755.firebaseapp.com",
+                databaseURL: "https://rahatconnect-e9755-default-rtdb.firebaseio.com",
+                projectId: "rahatconnect-e9755",
+                storageBucket: "rahatconnect-e9755.appspot.com",
+                messagingSenderId: "326989187761",
+                appId: "1:326989187761:web:b2800fdbadb32b2a3af090"
+            };
 
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
@@ -631,12 +629,18 @@
             auth.onAuthStateChanged(async user => {
                 clearListeners();
                 if (user) {
-                    const userDoc = await firestore.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) {
-                        showModal('profileSetup');
-                    } else {
-                        currentUser = { uid: user.uid, ...userDoc.data() };
-                        initializeApp();
+                    try {
+                        const userDoc = await firestore.collection('users').doc(user.uid).get();
+                        if (!userDoc.exists) {
+                            showModal('profileSetup');
+                        } else {
+                            currentUser = { uid: user.uid, ...userDoc.data() };
+                            initializeApp();
+                        }
+                    } catch (error) {
+                        console.error("Error fetching user profile:", error);
+                        alert("Could not fetch your profile. Please check your network connection or Firestore rules.");
+                        auth.signOut(); // Log out if profile can't be fetched
                     }
                 } else {
                     currentUser = null;
@@ -657,7 +661,6 @@
                     return;
                 }
 
-                // Check for username uniqueness
                 const usernameQuery = await firestore.collection('users').where('username', '==', username).get();
                 if (!usernameQuery.empty) {
                     alert('Username is already taken. Please choose another one.');
@@ -708,7 +711,7 @@
                 
                 addListener(contactsRef, 'value', snapshot => {
                     contactList.innerHTML = '';
-                    document.getElementById('no-contacts-msg').classList.toggle('hidden', snapshot.exists());
+                    document.getElementById('no-contacts-msg').classList.toggle('hidden', !snapshot.exists());
                     if (!snapshot.exists()) return;
 
                     snapshot.forEach(childSnapshot => {
