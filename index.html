@@ -2,538 +2,1527 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RahatConnect</title>
+    
+    <!-- Google Font: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 
     <!-- Firebase v8 SDKs -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <style>
+        /* --- CSS VARIABLES & THEME --- */
         :root {
-            --bg-color: #FFFFFF;
-            --text-color: #000000;
-            --accent-color: #FFD700;
-            --button-text-color: #000000;
-            --secondary-bg-color: #F5F5F5;
-            --border-color: #CED0D4;
+            --bg-color: #0f0f2d;
+            --text-color: #ffffff;
+            --primary-color: #e94560; /* Neon Pink */
+            --secondary-color: #3a8bfd; /* Neon Blue */
+            --container-bg: rgba(255, 255, 255, 0.05);
+            --sent-bubble-bg: #3a8bfd;
+            --received-bubble-bg: #33335a;
         }
-        .dark-mode {
-            --bg-color: #18191A;
-            --text-color: #E4E6EB;
-            --secondary-bg-color: #242526;
-            --border-color: #3A3B3C;
+
+        body.light-theme {
+            --bg-color: #f0f2f5;
+            --text-color: #0f0f2d;
+            --container-bg: #ffffff;
+            --sent-bubble-bg: #3a8bfd;
+            --received-bubble-bg: #e4e6eb;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--secondary-bg-color); color: var(--text-color); }
-        .hidden { display: none !important; }
-        .app-container { width: 100%; min-height: 100vh; }
-        
-        /* Views */
-        .view { display: none; flex-direction: column; width: 100%; min-height: 100vh; }
-        .view.active { display: flex; }
 
-        /* Authentication View */
-        #auth-view { justify-content: center; align-items: center; padding: 2rem; background-color: var(--bg-color); }
-        #auth-view h1 { font-size: 48px; font-weight: 700; color: var(--accent-color); margin-bottom: 2.5rem; }
-        .auth-form { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 1rem; }
-        .auth-form input { width: 100%; padding: 14px 25px; border-radius: 25px; border: 2px solid var(--accent-color); background: transparent; color: var(--text-color); font-size: 1rem; outline: none; }
-        .auth-form input::placeholder { color: var(--text-color); opacity: 0.6; }
-        .auth-form button { padding: 14px; border-radius: 50px; border: none; background: var(--accent-color); color: var(--button-text-color); font-weight: bold; font-size: 1rem; cursor: pointer; }
-        .auth-error { color: #ff3b30; font-size: 0.8rem; text-align: center; height: 1.2rem; }
-        
-        /* Main App Structure */
-        .top-nav-bar { position: fixed; top: 0; left: 0; width: 100%; height: 55px; background-color: var(--bg-color); border-bottom: 1px solid var(--border-color); display: flex; justify-content: center; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .top-nav-inner { width: 100%; max-width: 1000px; display: flex; justify-content: space-around; }
-        .top-nav-btn { padding: 0 15px; height: 100%; border: none; background: none; cursor: pointer; font-size: 1rem; font-weight: 600; color: var(--text-color); opacity: 0.7; display: flex; align-items: center; border-bottom: 3px solid transparent; transition: all 0.2s ease; flex-shrink: 0; }
-        .top-nav-btn.active { color: var(--accent-color); border-bottom-color: var(--accent-color); opacity: 1; }
-        .badge { background: red; color: white; font-size: 0.7rem; min-width: 18px; height: 18px; padding: 2px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-left: 8px; }
+        /* --- GLOBAL STYLES --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
 
-        .main-content { width: 100%; padding-top: 55px; display: flex; justify-content: center; }
-        .content-column { width: 100%; max-width: 680px; }
-        
-        .tab-content { display: none; flex-direction: column; width: 100%; }
-        .tab-content.active { display: flex; }
-        .inner-content { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
-        .tab-content h3 { color: var(--text-color); padding-bottom: 0.5rem; margin-bottom: 1rem; font-size: 1.5rem; border-bottom: 1px solid var(--border-color); }
-        
-        /* Components */
-        .story-bar { display: flex; gap: 10px; padding: 1rem; background: var(--bg-color); border-radius: 8px; overflow-x: auto; border: 1px solid var(--border-color); }
-        .story-circle { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; text-align: center; width: 70px; }
-        .story-circle-img-container { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--accent-color); padding: 2px; display: flex; justify-content: center; align-items: center; }
-        .story-circle-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background-color: var(--secondary-bg-color); }
-        
-        .post-card { background-color: var(--bg-color); border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--border-color); }
-        .post-header { display: flex; align-items: center; gap: 10px; padding: 12px; }
-        .post-author-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
-        .post-author-info .name { font-weight: 600; }
-        .post-author-info .time { font-size: 0.75rem; opacity: 0.7; }
-        .post-content { padding: 0 12px 12px; }
-        .post-media { max-width: 100%; display: block; margin-top: 12px; border-radius: 8px; }
-        .post-actions { display: flex; justify-content: space-around; padding: 4px; border-top: 1px solid var(--border-color); }
-        .post-action-btn { flex: 1; background: none; border: none; color: var(--text-color); font-weight: 600; cursor: pointer; padding: 8px; border-radius: 8px; }
-        .post-action-btn:hover { background-color: var(--secondary-bg-color); }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-        .list-item { display: flex; align-items: center; padding: 0.8rem; background-color: var(--bg-color); border-radius: 10px; gap: 1rem; margin-bottom: 0.5rem; border: 1px solid var(--border-color); }
-        .item-info { flex-grow: 1; }
-        .item-actions button { padding: 5px 12px; border-radius: 15px; border: none; background-color: var(--accent-color); color: var(--button-text-color); font-weight: 600; cursor: pointer; }
+        #app-container {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 900px;
+            background-color: var(--bg-color);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* --- AUTH VIEW --- */
+        .auth-view {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            height: 100%;
+        }
+
+        .auth-view h1 {
+            font-size: 36px;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+            margin-bottom: 40px;
+        }
         
-        /* Profile View */
-        .profile-header { position: relative; height: 35vh; max-height: 350px; background-color: var(--secondary-bg-color); }
-        .profile-cover-img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-info-container { background-color: var(--bg-color); border-bottom: 1px solid var(--border-color); }
-        .profile-info { text-align: center; padding: 15px; padding-top: 75px; position: relative; max-width: 680px; margin: auto; }
-        .profile-avatar { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--bg-color); object-fit: cover; position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); }
-        .profile-info h2 { font-size: 1.8rem; }
-        .profile-info button { padding: 8px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; margin-top: 1rem; }
+        .auth-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .auth-form input {
+            border-radius: 25px;
+            border: 2px solid var(--secondary-color);
+            background: transparent;
+            color: var(--text-color);
+            padding: 12px 20px;
+            max-width: 350px;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        .auth-form input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
         
-        /* Chat & Call Overlay Views */
-        #chat-view, #call-view { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1100; background-color: var(--bg-color); transform: translateX(100%); transition: transform 0.3s ease-in-out; }
-        #chat-view.active, #call-view.active { transform: translateX(0); }
-        .chat-header { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); }
-        .chat-header .back-btn { font-size: 1.5rem; }
-        .chat-header .contact-name { flex-grow: 1; text-align: center; font-weight: 600; }
-        .messages-container { flex-grow: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; }
-        .message-bubble { max-width: 70%; padding: 8px 12px; border-radius: 18px; }
-        .message-bubble.sent { background-color: var(--accent-color); color: var(--button-text-color); align-self: flex-end; }
-        .message-bubble.received { background-color: var(--secondary-bg-color); align-self: flex-start; }
-        .message-input-container { display: flex; padding: 10px; gap: 10px; border-top: 1px solid var(--border-color); }
-        .message-input { flex-grow: 1; padding: 10px; border-radius: 20px; border: 1px solid var(--border-color); }
+        body.light-theme .auth-form input::placeholder {
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-form button {
+            border-radius: 50px;
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+            max-width: 350px;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+            font-size: 16px;
+        }
+
+        .auth-form button:hover {
+            box-shadow: 0 0 15px var(--primary-color), 0 0 25px var(--primary-color);
+            transform: translateY(-2px);
+        }
         
-        /* Modal Styles */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { width: 90%; max-width: 500px; padding: 2rem; border-radius: 10px; background-color: var(--bg-color); display: flex; flex-direction: column; gap: 1rem; }
-        .modal-content textarea { width: 100%; min-height: 100px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .form-switch {
+            color: var(--text-color);
+            font-size: 13px;
+            margin-top: 20px;
+        }
+
+        .form-switch a {
+            color: var(--primary-color);
+            text-decoration: underline;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .error-message {
+            color: #ff4d4d;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        /* --- MAIN APP VIEW --- */
+        #main-app-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+
+        header, footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: var(--container-bg);
+            flex-shrink: 0;
+        }
+        
+        header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        header h1 {
+            font-size: 20px;
+            color: var(--primary-color);
+            text-shadow: 0 0 5px var(--primary-color);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px 10px;
+            position: relative;
+        }
+        
+        .badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            transform: translate(50%, -50%);
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--container-bg);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .list-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .item-emoji {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+
+        .item-info {
+            flex-grow: 1;
+        }
+
+        .item-name {
+            font-weight: bold;
+        }
+        
+        .item-detail {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        body.light-theme .item-detail {
+            color: rgba(0,0,0,0.6);
+        }
+
+        .item-actions button {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        .item-actions button.reject {
+            background: var(--primary-color);
+        }
+
+        /* --- CHAT PAGE --- */
+        #chat-page {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #chat-header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: var(--container-bg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #chat-header button {
+            margin-right: 10px;
+        }
+
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+
+        .sent {
+            background-color: var(--sent-bubble-bg);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .received {
+            background-color: var(--received-bubble-bg);
+            color: var(--text-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        #chat-input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #chat-input {
+            flex-grow: 1;
+            background: var(--container-bg);
+            border: 1px solid var(--secondary-color);
+            color: var(--text-color);
+            border-radius: 20px;
+            padding: 10px 15px;
+        }
+
+        #send-message-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            margin-left: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid var(--secondary-color);
+            box-shadow: 0 0 20px var(--secondary-color);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .modal-content input, .modal-content button {
+            width: 100%;
+        }
+
+        .modal-content input {
+            border-radius: 25px;
+            border: 2px solid var(--secondary-color);
+            background: transparent;
+            color: var(--text-color);
+            padding: 12px 20px;
+            font-size: 16px;
+        }
+
+        .modal-content button {
+            border-radius: 50px;
+            background: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+        }
+        
+        .modal-content .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-content button.secondary {
+            background-color: #555;
+        }
+
+        /* --- CALL UI --- */
+        #call-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #remote-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #local-video {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 25%;
+            max-width: 150px;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            cursor: move;
+            z-index: 2001;
+        }
+
+        .call-info {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2002;
+            background-color: rgba(0,0,0,0.5);
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+        }
+        
+        .call-info .caller-emoji {
+            font-size: 40px;
+        }
+
+        .call-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2002;
+            display: flex;
+            gap: 20px;
+        }
+
+        .call-controls button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #end-call-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Auth View (dynamically populated) -->
-        <div id="auth-view" class="view active"></div>
 
-        <!-- Main App View -->
-        <div id="main-app-view" class="view">
-            <nav class="top-nav-bar">
-                <div class="top-nav-inner">
-                    <button class="top-nav-btn active" data-tab="home-tab">Home</button>
-                    <button class="top-nav-btn" data-tab="friends-tab">Friends</button>
-                    <button class="top-nav-btn" data-tab="chat-tab">Chat</button>
-                    <button class="top-nav-btn" data-tab="search-tab">Search</button>
-                    <button class="top-nav-btn" data-tab="profile-tab">Profile</button>
+    <div id="app-container">
+        <!-- AUTHENTICATION VIEW -->
+        <div id="auth-view" class="auth-view">
+            <h1 id="app-title">RahatConnect</h1>
+            
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form">
+                <input type="email" id="login-email" placeholder="Email">
+                <input type="password" id="login-password" placeholder="Password">
+                <button id="login-btn">Log In</button>
+                <p class="error-message" id="login-error"></p>
+                <p class="form-switch">Don't have an account? <a id="show-signup">Sign up</a></p>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-form" class="auth-form" style="display: none;">
+                <input type="email" id="signup-email" placeholder="Email">
+                <input type="password" id="signup-password" placeholder="Password">
+                <button id="signup-btn">Sign Up</button>
+                <p class="error-message" id="signup-error"></p>
+                <p class="form-switch">Already have an account? <a id="show-login">Log in</a></p>
+            </div>
+        </div>
+
+        <!-- MAIN APP VIEW -->
+        <div id="main-app-view" style="display: none;">
+            <header>
+                <button id="menu-btn" class="nav-btn">Menu</button>
+                <h1>RahatConnect</h1>
+                <button id="add-friend-btn" class="nav-btn">Add Friend</button>
+            </header>
+
+            <main id="content-pages">
+                <!-- Home Page (Contact List) -->
+                <div id="home-page" class="page active">
+                    <div id="contact-list"></div>
                 </div>
-            </nav>
-            <main class="main-content">
-                <div class="content-column">
-                    <div id="home-tab" class="tab-content active">
-                        <div class="inner-content">
-                            <div class="story-bar" id="story-bar"></div>
-                            <button id="create-post-btn">What's on your mind?</button>
-                            <div id="feed-container"></div>
+
+                <!-- Notifications Page -->
+                <div id="notifications-page" class="page">
+                    <h2>Notifications</h2>
+                    <div id="notification-list"></div>
+                </div>
+
+                <!-- Calls Page (Call Logs) -->
+                <div id="calls-page" class="page">
+                    <h2>Call Logs</h2>
+                    <div id="call-log-list"></div>
+                </div>
+                
+                <!-- Chat Page (dynamically populated) -->
+                <div id="chat-page" class="page">
+                    <div id="chat-header">
+                        <button id="back-to-home-btn" class="nav-btn">Back</button>
+                        <div class="item-emoji" id="chat-header-emoji"></div>
+                        <div class="item-info">
+                            <div class="item-name" id="chat-header-name"></div>
                         </div>
                     </div>
-                    <div id="friends-tab" class="tab-content">
-                        <div class="inner-content">
-                            <h3>Friend Requests <span id="requests-count-badge" class="badge hidden">0</span></h3>
-                            <div id="friend-requests-container"></div>
-                            <h3>Suggestions</h3>
-                            <div id="friend-suggestions-container"></div>
-                        </div>
-                    </div>
-                    <div id="chat-tab" class="tab-content">
-                        <div class="inner-content">
-                           <h3>Messages</h3>
-                           <div id="chat-list-container"></div>
-                        </div>
-                    </div>
-                    <div id="search-tab" class="tab-content">
-                        <div class="inner-content">
-                            <h3>Find Friends</h3>
-                            <div style="display:flex; gap: 5px;"><input type="text" id="search-input" placeholder="@username or Connect-xxxx"><button id="search-btn">Search</button></div>
-                            <div id="search-results-container"></div>
-                        </div>
-                    </div>
-                    <div id="profile-tab" class="tab-content">
-                        <div class="profile-header"> <img id="profile-cover-img" class="profile-cover-img"> </div>
-                        <div class="profile-info-container">
-                            <div class="profile-info">
-                                <img id="profile-avatar-img" class="profile-avatar">
-                                <h2 id="profile-main-name"></h2>
-                                <p id="profile-main-friendcode"></p>
-                                <div style="margin-top: 1rem; display: flex; gap: 10px; justify-content: center;">
-                                    <button id="edit-profile-btn">Edit Profile</button>
-                                    <button id="logout-btn" style="background-color: #ff3b30; color: white;">Logout</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="inner-content" id="user-posts-container"><h3>My Posts</h3></div>
+                    <div id="chat-messages"></div>
+                    <div id="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Type a message...">
+                        <button id="send-message-btn">Send</button>
                     </div>
                 </div>
             </main>
-        </div>
 
-        <!-- Overlay Views for Chat & Calls -->
-        <div id="chat-view" class="view"></div>
-        <div id="call-view" class="view"></div>
+            <footer>
+                <button id="nav-home" class="nav-btn">Home</button>
+                <button id="nav-notifications" class="nav-btn">Notifications</button>
+                <button id="nav-calls" class="nav-btn">Calls</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- MODALS & OVERLAYS -->
+    
+    <!-- Profile Setup Modal -->
+    <div id="profile-setup-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Setup Your Profile</h2>
+            <input type="text" id="profile-name-input" placeholder="Your Name">
+            <input type="text" id="profile-emoji-input" placeholder="Your Emoji (max 2)" maxlength="2">
+            <button id="save-profile-btn">Save Profile</button>
+        </div>
+    </div>
+
+    <!-- Incoming Call Modal -->
+    <div id="incoming-call-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 id="incoming-call-type">Incoming Call</h2>
+            <div style="text-align: center;">
+                <div id="incoming-caller-emoji" style="font-size: 48px;"></div>
+                <h3 id="incoming-caller-name"></h3>
+            </div>
+            <div class="button-group">
+                <button id="reject-call-btn" class="secondary">Reject</button>
+                <button id="accept-call-btn">Accept</button>
+            </div>
+        </div>
     </div>
     
-    <!-- Modals -->
-    <div id="profile-setup-modal" class="modal-overlay hidden"></div>
-    <div id="create-post-modal" class="modal-overlay hidden"></div>
-    <div id="edit-profile-modal" class="modal-overlay hidden"></div>
+    <!-- Menu Modal -->
+    <div id="menu-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Menu</h2>
+            <button id="menu-profile-btn">My Profile</button>
+            <button id="menu-blocked-btn">Blocked Users</button>
+            <button id="menu-theme-btn">Toggle Theme</button>
+            <button id="menu-logout-btn" class="secondary">Logout</button>
+            <button id="menu-close-btn" class="secondary">Close</button>
+        </div>
+    </div>
+
+    <!-- My Profile Modal -->
+     <div id="my-profile-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>My Profile</h2>
+            <p><strong>Name:</strong> <span id="profile-view-name"></span></p>
+            <p><strong>Emoji:</strong> <span id="profile-view-emoji"></span></p>
+            <p><strong>ID:</strong> <span id="profile-view-id"></span></p>
+            <input type="text" id="profile-edit-name" style="display:none;">
+            <input type="text" id="profile-edit-emoji" style="display:none;" maxlength="2">
+            <button id="profile-edit-btn">Edit</button>
+            <button id="profile-save-changes-btn" style="display:none;">Save Changes</button>
+            <button id="profile-close-btn" class="secondary">Close</button>
+        </div>
+    </div>
+
+    <!-- CALL VIEW -->
+    <div id="call-view">
+        <video id="remote-video" autoplay playsinline></video>
+        <video id="local-video" autoplay playsinline muted></video>
+
+        <div class="call-info">
+            <div class="caller-emoji" id="call-view-emoji"></div>
+            <h3 id="call-view-name"></h3>
+            <p id="call-view-status">Connecting...</p>
+        </div>
+
+        <div class="call-controls">
+            <button id="end-call-btn">End</button>
+        </div>
+    </div>
     
-    <script>
-        (() => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCyi55rVrsBtF9HpqMWz2a4H4ggwSkJ6z4",
-                authDomain: "rahatconnect-e9755.firebaseapp.com",
-                databaseURL: "https://rahatconnect-e9755-default-rtdb.firebaseio.com",
-                projectId: "rahatconnect-e9755",
-                storageBucket: "rahatconnect-e9755.appspot.com",
-                messagingSenderId: "326989187761",
-                appId: "1:326989187761:web:b2800fdbadb32b2a3af090"
-            };
+    <!-- RINGTONE -->
+    <audio id="ringtone" src="https://github.com/rahatalwalid/RahatConnect-Sound/raw/refs/heads/main/incoming.wav" loop></audio>
+    
+<script>
+// --- FIREBASE CONFIGURATION ---
+// IMPORTANT: Replace with your own Firebase project configuration.
+const firebaseConfig = {
+    apiKey: "AIzaSyCyi55rVrsBtF9HpqMWz2a4H4ggwSkJ6z4",
+    authDomain: "rahatconnect-e9755.firebaseapp.com",
+    databaseURL: "https://rahatconnect-e9755-default-rtdb.firebaseio.com",
+    projectId: "rahatconnect-e9755",
+    storageBucket: "rahatconnect-e9755.appspot.com",
+    messagingSenderId: "326989187761",
+    appId: "1:326989187761:web:b2800fdbadb32b2a3af090"
+};
 
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const firestore = firebase.firestore();
-            const db = firebase.database();
-            let currentUser = null;
+/* 
+--- RECOMMENDED FIREBASE REALTIME DATABASE RULES ---
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "requests": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "auth != null"
+      }
+    },
+    "contacts": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "auth != null"
+      }
+    },
+    "messages": {
+      "$chatId": {
+        ".read": "auth != null && $chatId.includes(auth.uid)",
+        ".write": "auth != null && $chatId.includes(auth.uid)",
+        ".indexOn": "timestamp"
+      }
+    },
+    "calls": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "auth != null"
+      }
+    },
+    "callLogs": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "auth != null"
+      }
+    },
+    "blocked": {
+        "$uid": {
+            ".read": "$uid === auth.uid",
+            ".write": "auth != null"
+        }
+    },
+    "unreadCounts": {
+        "$uid": {
+            ".read": "$uid === auth.uid",
+            ".write": "auth != null"
+        }
+    },
+    "notifications": {
+        "$uid": {
+            ".read": "$uid === auth.uid",
+            ".write": "auth != null"
+        }
+    }
+  }
+}
+*/
 
-            // --- UTILITY & RENDER FUNCTIONS ---
-            window.showModal = (id, show = true) => document.getElementById(id)?.classList.toggle('hidden', !show);
-            const showView = id => {
-                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                document.getElementById(id)?.classList.add('active');
-            };
-            const applyTheme = theme => {
-                document.body.classList.toggle('dark-mode', theme === 'dark');
-                localStorage.setItem('rahatconnect-theme', theme);
-            };
-            const fileToBase64 = file => new Promise((resolve, reject) => {
-                if (file.size > 750000) return reject(new Error("Image is too large (max 750KB)."));
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
+// --- INITIALIZE FIREBASE v8 ---
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 
-            // --- AUTHENTICATION & INITIALIZATION ---
-            auth.onAuthStateChanged(async user => {
-                if (user) {
-                    const userDocRef = firestore.collection('users').doc(user.uid);
-                    let userDoc = await userDocRef.get();
-                    if (!userDoc.exists) {
-                        renderProfileSetupModal(user);
-                        showModal('profile-setup-modal');
-                    } else {
-                        currentUser = { uid: user.uid, ...userDoc.data() };
-                        initializeApp();
-                    }
+// --- GLOBAL STATE ---
+let currentUser = null;
+let currentUserProfile = null;
+let currentChatPartner = null;
+let currentChatId = null;
+let localStream = null;
+let remoteStream = null;
+let peerConnection = null;
+let incomingCallData = null;
+let activeListeners = {}; // To keep track of active Firebase listeners
+
+const rtcConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+
+// --- DOM ELEMENTS ---
+const authView = document.getElementById('auth-view');
+const mainAppView = document.getElementById('main-app-view');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+const showSignupLink = document.getElementById('show-signup');
+const showLoginLink = document.getElementById('show-login');
+
+// --- APP INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Theme setup
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+    
+    // Auth state listener
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            fetchUserProfile(user.uid).then(profile => {
+                if (profile) {
+                    currentUserProfile = profile;
+                    initializeAppUI();
+                    authView.style.display = 'none';
+                    mainAppView.style.display = 'flex';
                 } else {
-                    currentUser = null;
-                    renderAuthView();
-                    showView('auth-view');
+                    document.getElementById('profile-setup-modal').style.display = 'flex';
                 }
             });
+        } else {
+            currentUser = null;
+            currentUserProfile = null;
+            authView.style.display = 'flex';
+            mainAppView.style.display = 'none';
+            cleanupListeners(); // Clean up listeners on logout
+        }
+    });
 
-            function initializeApp() {
-                showView('main-app-view');
-                const savedTheme = localStorage.getItem('rahatconnect-theme') || 'light';
-                applyTheme(savedTheme);
-                attachAllListeners();
-                loadAllData();
-            }
+    // Event Listeners
+    setupEventListeners();
+});
 
-            function loadAllData() {
-                updateProfileView(); renderFeed(); renderFriendRequests(); renderFriendSuggestions(); renderChatList();
-            }
+// --- UI & VIEW MANAGEMENT ---
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    
+    if (pageId !== 'chat-page') {
+        document.getElementById('content-pages').style.display = 'block';
+        document.getElementById('chat-page').style.display = 'none';
+    }
+}
 
-            // --- DYNAMIC VIEW & MODAL RENDERING ---
-            function renderAuthView() {
-                document.getElementById('auth-view').innerHTML = `
-                    <div id="login-form" class="auth-form">
-                        <h1>RahatConnect</h1>
-                        <input type="email" id="login-email" placeholder="Email"><input type="password" id="login-password" placeholder="Password">
-                        <div class="auth-error" id="login-error"></div><button id="login-btn">Login</button>
-                        <p class="auth-toggle-link">No account? <a id="show-signup">Signup</a></p>
-                    </div>
-                    <div id="signup-form" class="auth-form hidden">
-                        <h1>RahatConnect</h1>
-                        <input type="email" id="signup-email" placeholder="Email"><input type="password" id="signup-password" placeholder="Password">
-                        <div class="auth-error" id="signup-error"></div><button id="signup-btn">Signup</button>
-                        <p class="auth-toggle-link">Have an account? <a id="show-login">Login</a></p>
-                    </div>`;
-                document.getElementById('show-signup').onclick = () => { document.getElementById('login-form').classList.add('hidden'); document.getElementById('signup-form').classList.remove('hidden'); };
-                document.getElementById('show-login').onclick = () => { document.getElementById('login-form').classList.remove('hidden'); document.getElementById('signup-form').classList.add('hidden'); };
-                document.getElementById('login-btn').onclick = () => auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-password').value).catch(e => document.getElementById('login-error').textContent = e.message);
-                document.getElementById('signup-btn').onclick = () => auth.createUserWithEmailAndPassword(document.getElementById('signup-email').value, document.getElementById('signup-password').value).catch(e => document.getElementById('signup-error').textContent = e.message);
-            }
-            
-            function renderProfileSetupModal(user) {
-                 document.getElementById('profile-setup-modal').innerHTML = `
-                    <div class="modal-content">
-                        <h3>Welcome to RahatConnect!</h3><p>Let's set up your profile.</p>
-                        <input type="text" id="setup-name" placeholder="Full Name" value="${user.email.split('@')[0]}">
-                        <input type="text" id="setup-username" placeholder="Unique Username (e.g., @rahat)">
-                        <input type="text" id="setup-emoji" placeholder="Your Emoji (e.g., 😊🔥)" maxlength="2">
-                        <button id="save-setup-profile">Save & Continue</button>
-                    </div>`;
-                document.getElementById('save-setup-profile').onclick = async () => {
-                    const name = document.getElementById('setup-name').value;
-                    const username = document.getElementById('setup-username').value;
-                    const emoji = document.getElementById('setup-emoji').value;
-                    if(!name || !username || !emoji) return alert("All fields are required.");
-                    const profileData = { name, emoji, username: username.startsWith('@') ? username : `@${username}`, friendCode: `Connect-${Math.floor(1000 + Math.random() * 9000)}`, email: user.email, avatarUrl: '', coverUrl: '', createdAt: firebase.firestore.FieldValue.serverTimestamp()};
-                    await firestore.collection('users').doc(user.uid).set(profileData);
-                    currentUser = { uid: user.uid, ...profileData };
-                    showModal('profile-setup-modal', false);
-                    initializeApp();
-                };
-            }
+function showChatPage(partnerData) {
+    currentChatPartner = partnerData;
+    currentChatId = getChatId(currentUser.uid, partnerData.uid);
 
-            // --- LISTENERS ---
-            function attachAllListeners() {
-                // Navigation
-                document.querySelector('.top-nav-bar').onclick = e => {
-                    const button = e.target.closest('.top-nav-btn');
-                    if (!button) return;
-                    document.querySelectorAll('.top-nav-btn').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-                    document.getElementById(button.dataset.tab)?.classList.add('active');
-                };
-                
-                // Main Buttons
-                document.getElementById('create-post-btn').onclick = () => showModal('create-post-modal');
-                document.getElementById('edit-profile-btn').onclick = () => renderEditProfileModal();
-                document.getElementById('logout-btn').onclick = () => auth.signOut();
-                document.getElementById('search-btn').onclick = searchFriends;
-            }
+    document.getElementById('content-pages').style.display = 'none';
+    document.getElementById('chat-page').style.display = 'flex';
+    
+    document.getElementById('chat-header-emoji').textContent = partnerData.emoji;
+    document.getElementById('chat-header-name').textContent = partnerData.name;
+    
+    loadChatMessages(currentChatId);
+    db.ref(`/unreadCounts/${currentUser.uid}/${currentChatId}`).set(0);
+}
 
-            // --- PROFILE ---
-            function updateProfileView() {
-                const defaultAvatar = `https://ui-avatars.com/api/?name=${currentUser.name[0]}&background=FFD700&color=000`;
-                document.getElementById('profile-main-name').textContent = currentUser.name;
-                document.getElementById('profile-main-friendcode').textContent = currentUser.friendCode;
-                document.getElementById('profile-avatar-img').src = currentUser.avatarUrl || defaultAvatar;
-                document.getElementById('profile-cover-img').src = currentUser.coverUrl || 'https://via.placeholder.com/800x350?text=Cover+Image';
-            }
-            
-            function renderEditProfileModal() {
-                 document.getElementById('edit-profile-modal').innerHTML = `
-                    <div class="modal-content">
-                        <h3>Edit Profile</h3>
-                        <label>Name</label><input type="text" id="edit-name-input" value="${currentUser.name}">
-                        <label>Cover Image</label><input type="file" id="edit-cover-input" accept="image/*">
-                        <label>Profile Picture</label><input type="file" id="edit-avatar-input" accept="image/*">
-                        <hr><label>Theme</label>
-                        <select id="theme-select">
-                            <option value="light" ${localStorage.getItem('rahatconnect-theme') === 'light' ? 'selected' : ''}>Light</option>
-                            <option value="dark" ${localStorage.getItem('rahatconnect-theme') === 'dark' ? 'selected' : ''}>Dark</option>
-                        </select>
-                        <button id="save-profile-changes-btn">Save</button>
-                        <button class="secondary-btn" onclick="showModal('edit-profile-modal', false)">Cancel</button>
-                    </div>`;
-                document.getElementById('save-profile-changes-btn').onclick = async () => {
-                    const updates = { name: document.getElementById('edit-name-input').value };
-                    const coverFile = document.getElementById('edit-cover-input').files[0];
-                    const avatarFile = document.getElementById('edit-avatar-input').files[0];
-                    try {
-                        if (coverFile) updates.coverUrl = await fileToBase64(coverFile);
-                        if (avatarFile) updates.avatarUrl = await fileToBase64(avatarFile);
-                        await firestore.collection('users').doc(currentUser.uid).update(updates);
-                        currentUser = {...currentUser, ...updates};
-                        updateProfileView();
-                        showModal('edit-profile-modal', false);
-                    } catch (error) { alert(error.message); }
-                };
-                document.getElementById('theme-select').onchange = (e) => applyTheme(e.target.value);
-                showModal('edit-profile-modal');
-            }
-            
-            // --- SOCIAL FEED & POSTS ---
-            document.getElementById('create-post-modal').innerHTML = `
-                <div class="modal-content">
-                    <h3>Create Post</h3>
-                    <textarea id="post-text-input" placeholder="What's on your mind?"></textarea>
-                    <label>Upload Photo</label><input type="file" id="post-media-input" accept="image/*">
-                    <button id="submit-post-btn">Post</button>
-                    <button class="secondary-btn" onclick="showModal('create-post-modal', false)">Cancel</button>
-                </div>`;
-            document.getElementById('submit-post-btn').onclick = async () => {
-                const text = document.getElementById('post-text-input').value.trim();
-                const mediaFile = document.getElementById('post-media-input').files[0];
-                if (!text && !mediaFile) return alert('Post is empty.');
-                const postBtn = document.getElementById('submit-post-btn');
-                postBtn.disabled = true; postBtn.textContent = 'Posting...';
-                try {
-                    const post = { authorId: currentUser.uid, authorName: currentUser.name, authorAvatar: currentUser.avatarUrl, text, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
-                    if (mediaFile) post.mediaUrl = await fileToBase64(mediaFile);
-                    await firestore.collection('posts').add(post);
-                    showModal('create-post-modal', false);
-                } catch (error) { alert(error.message); }
-                finally { postBtn.disabled = false; postBtn.textContent = 'Post'; }
-            };
 
-            function renderFeed() {
-                firestore.collection('posts').orderBy('timestamp', 'desc').limit(20).onSnapshot(snapshot => {
-                    const feedContainer = document.getElementById('feed-container');
-                    feedContainer.innerHTML = '';
-                    snapshot.forEach(doc => feedContainer.appendChild(createPostElement(doc.data())));
-                });
-            }
-            
-            function createPostElement(post) {
-                const card = document.createElement('div'); card.className = 'post-card';
-                const time = post.timestamp ? new Date(post.timestamp.toDate()).toLocaleString() : 'Just now';
-                const defaultAvatar = `https://ui-avatars.com/api/?name=${post.authorName[0]}`;
-                card.innerHTML = `<div class="post-header"><img src="${post.authorAvatar || defaultAvatar}" class="post-author-img"><div class="post-author-info"><div class="name">${post.authorName}</div><div class="time">${time}</div></div></div><div class="post-content"><p>${post.text}</p>${post.mediaUrl ? `<img src="${post.mediaUrl}" class="post-media">` : ''}</div>`;
-                return card;
-            }
+// --- EVENT LISTENERS SETUP ---
+function setupEventListeners() {
+    // Auth form switching
+    showSignupLink.addEventListener('click', () => {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+    });
+    showLoginLink.addEventListener('click', () => {
+        signupForm.style.display = 'none';
+        loginForm.style.display = 'block';
+    });
 
-            // --- FRIENDS & SEARCH ---
-            async function searchFriends() {
-                const query = document.getElementById('search-input').value.trim();
-                const resultsContainer = document.getElementById('search-results-container');
-                resultsContainer.innerHTML = 'Searching...';
-                let q;
-                if(query.startsWith('@')) q = firestore.collection('users').where('username', '==', query);
-                else if(query.toLowerCase().startsWith('connect-')) q = firestore.collection('users').where('friendCode', '==', query);
-                else return resultsContainer.innerHTML = 'Invalid query format.';
-                
-                const snapshot = await q.get();
-                if(snapshot.empty) return resultsContainer.innerHTML = 'No users found.';
-                
-                resultsContainer.innerHTML = '';
-                snapshot.forEach(doc => {
-                    if(doc.id === currentUser.uid) return;
-                    const user = doc.data();
-                    const item = document.createElement('div');
-                    item.className = 'list-item';
-                    item.innerHTML = `<div class="item-info"><div class="name">${user.name}</div><div class="detail">${user.username}</div></div><div class="item-actions"><button data-uid="${doc.id}">Add Friend</button></div>`;
-                    item.querySelector('button').onclick = (e) => {
-                        db.ref(`requests/${doc.id}/${currentUser.uid}`).set({ fromName: currentUser.name, fromAvatar: currentUser.avatarUrl });
-                        e.target.textContent = 'Sent'; e.target.disabled = true;
-                    };
-                    resultsContainer.appendChild(item);
-                });
-            }
+    // Auth actions
+    document.getElementById('signup-btn').addEventListener('click', handleSignup);
+    document.getElementById('login-btn').addEventListener('click', handleLogin);
+    
+    // Profile setup
+    document.getElementById('save-profile-btn').addEventListener('click', handleProfileSetup);
 
-            function renderFriendRequests() {
-                db.ref(`requests/${currentUser.uid}`).on('value', snapshot => {
-                    const container = document.getElementById('friend-requests-container');
-                    const badge = document.getElementById('requests-count-badge');
-                    if (!snapshot.exists()) {
-                        container.innerHTML = '<p>No new requests.</p>';
-                        badge.classList.add('hidden');
-                        return;
-                    }
-                    container.innerHTML = '';
-                    badge.textContent = snapshot.numChildren();
-                    badge.classList.remove('hidden');
-                    snapshot.forEach(childSnap => {
-                        const req = childSnap.val();
-                        const fromId = childSnap.key;
-                        const item = document.createElement('div');
-                        item.className = 'list-item';
-                        item.innerHTML = `<div class="item-info"><div class="name">${req.fromName}</div></div><div class="item-actions"><button>Accept</button></div>`;
-                        item.querySelector('button').onclick = async () => {
-                            await db.ref(`friends/${currentUser.uid}/${fromId}`).set(true);
-                            await db.ref(`friends/${fromId}/${currentUser.uid}`).set(true);
-                            await db.ref(`requests/${currentUser.uid}/${fromId}`).remove();
-                        };
-                        container.appendChild(item);
-                    });
-                });
-            }
+    // Navigation
+    document.getElementById('nav-home').addEventListener('click', () => showPage('home-page'));
+    document.getElementById('nav-notifications').addEventListener('click', () => showPage('notifications-page'));
+    document.getElementById('nav-calls').addEventListener('click', () => showPage('calls-page'));
+    document.getElementById('back-to-home-btn').addEventListener('click', () => {
+        showPage('home-page');
+        if (currentChatId && activeListeners[currentChatId]) {
+            activeListeners[currentChatId].off();
+            delete activeListeners[currentChatId];
+        }
+        currentChatId = null;
+        currentChatPartner = null;
+    });
 
-            async function renderFriendSuggestions() {
-                const friendsSnap = await db.ref(`friends/${currentUser.uid}`).once('value');
-                const friendIds = Object.keys(friendsSnap.val() || {});
-                friendIds.push(currentUser.uid); // Also exclude self
+    // Header buttons
+    document.getElementById('add-friend-btn').addEventListener('click', handleAddFriend);
+    document.getElementById('menu-btn').addEventListener('click', () => document.getElementById('menu-modal').style.display = 'flex');
 
-                const snapshot = await firestore.collection('users').limit(10).get();
-                const container = document.getElementById('friend-suggestions-container');
-                container.innerHTML = '';
-                snapshot.forEach(doc => {
-                    if (!friendIds.includes(doc.id)) {
-                        const user = doc.data();
-                        const item = document.createElement('div');
-                        item.className = 'list-item';
-                        item.innerHTML = `<div class="item-info"><div class="name">${user.name}</div></div><div class="item-actions"><button>Add</button></div>`;
-                        item.querySelector('button').onclick = (e) => {
-                           db.ref(`requests/${doc.id}/${currentUser.uid}`).set({ fromName: currentUser.name });
-                           e.target.textContent = 'Sent'; e.target.disabled = true;
-                        };
-                        container.appendChild(item);
-                    }
-                });
-            }
+    // Menu Modal
+    document.getElementById('menu-close-btn').addEventListener('click', () => document.getElementById('menu-modal').style.display = 'none');
+    document.getElementById('menu-logout-btn').addEventListener('click', () => auth.signOut());
+    document.getElementById('menu-theme-btn').addEventListener('click', toggleTheme);
+    document.getElementById('menu-profile-btn').addEventListener('click', showMyProfile);
+    // document.getElementById('menu-blocked-btn').addEventListener('click', showBlockedUsers); // Placeholder for blocked users UI
 
-            // --- CHAT & CALLS ---
-            function renderChatList() {
-                const container = document.getElementById('chat-list-container');
-                db.ref(`friends/${currentUser.uid}`).on('value', snapshot => {
-                    if (!snapshot.exists()) return container.innerHTML = '<p>No friends to chat with. Add some!</p>';
-                    container.innerHTML = '';
-                    snapshot.forEach(childSnap => {
-                        const friendId = childSnap.key;
-                        firestore.collection('users').doc(friendId).get().then(doc => {
-                            if(!doc.exists) return;
-                            const friend = doc.data();
-                            const item = document.createElement('div');
-                            item.className = 'list-item';
-                            item.style.cursor = 'pointer';
-                            item.innerHTML = `<div class="item-info"><div class="name">${friend.name}</div><div class="detail">${friend.username}</div></div>`;
-                            item.onclick = () => openChatView(friendId, friend);
-                            container.appendChild(item);
+    // Profile Modal
+    document.getElementById('profile-close-btn').addEventListener('click', () => document.getElementById('my-profile-modal').style.display = 'none');
+    document.getElementById('profile-edit-btn').addEventListener('click', toggleProfileEdit);
+    document.getElementById('profile-save-changes-btn').addEventListener('click', saveProfileChanges);
+
+    // Chat
+    document.getElementById('send-message-btn').addEventListener('click', handleSendMessage);
+    document.getElementById('chat-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleSendMessage();
+    });
+    
+    // Calling
+    document.getElementById('accept-call-btn').addEventListener('click', handleAcceptCall);
+    document.getElementById('reject-call-btn').addEventListener('click', handleRejectCall);
+    document.getElementById('end-call-btn').addEventListener('click', endCall);
+    makeElementDraggable(document.getElementById('local-video'));
+}
+
+// --- AUTHENTICATION HANDLERS ---
+function handleSignup() {
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const errorEl = document.getElementById('signup-error');
+    errorEl.textContent = '';
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .catch(error => {
+            errorEl.textContent = error.message;
+        });
+}
+
+function handleLogin() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('login-error');
+    errorEl.textContent = '';
+    
+    auth.signInWithEmailAndPassword(email, password)
+        .catch(error => {
+            errorEl.textContent = error.message;
+        });
+}
+
+
+// --- PROFILE & USER DATA ---
+async function fetchUserProfile(uid) {
+    const snapshot = await db.ref(`/users/${uid}`).once('value');
+    return snapshot.val();
+}
+
+async function handleProfileSetup() {
+    const name = document.getElementById('profile-name-input').value.trim();
+    const emoji = document.getElementById('profile-emoji-input').value.trim();
+    
+    if (!name || !emoji) {
+        alert('Please fill out both name and emoji.');
+        return;
+    }
+
+    const connectId = await generateUniqueConnectId();
+    
+    const profileData = {
+        name,
+        emoji,
+        connectId,
+        uid: currentUser.uid,
+    };
+
+    await db.ref(`/users/${currentUser.uid}`).set(profileData);
+    currentUserProfile = profileData;
+    document.getElementById('profile-setup-modal').style.display = 'none';
+    initializeAppUI();
+    authView.style.display = 'none';
+    mainAppView.style.display = 'flex';
+}
+
+async function generateUniqueConnectId() {
+    let isUnique = false;
+    let newId;
+    while (!isUnique) {
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        newId = `Connect-${randomNum}`;
+        const snapshot = await db.ref('users').orderByChild('connectId').equalTo(newId).once('value');
+        if (!snapshot.exists()) {
+            isUnique = true;
+        }
+    }
+    return newId;
+}
+
+function showMyProfile() {
+    document.getElementById('menu-modal').style.display = 'none';
+    document.getElementById('my-profile-modal').style.display = 'flex';
+    
+    document.getElementById('profile-view-name').textContent = currentUserProfile.name;
+    document.getElementById('profile-view-emoji').textContent = currentUserProfile.emoji;
+    document.getElementById('profile-view-id').textContent = currentUserProfile.connectId;
+    
+    // Reset edit state
+    document.getElementById('profile-edit-name').style.display = 'none';
+    document.getElementById('profile-edit-emoji').style.display = 'none';
+    document.getElementById('profile-save-changes-btn').style.display = 'none';
+    document.getElementById('profile-edit-btn').style.display = 'block';
+}
+
+function toggleProfileEdit() {
+    document.getElementById('profile-edit-btn').style.display = 'none';
+    document.getElementById('profile-save-changes-btn').style.display = 'block';
+
+    const nameInput = document.getElementById('profile-edit-name');
+    const emojiInput = document.getElementById('profile-edit-emoji');
+
+    nameInput.value = currentUserProfile.name;
+    emojiInput.value = currentUserProfile.emoji;
+
+    nameInput.style.display = 'block';
+    emojiInput.style.display = 'block';
+}
+
+async function saveProfileChanges() {
+    const newName = document.getElementById('profile-edit-name').value.trim();
+    const newEmoji = document.getElementById('profile-edit-emoji').value.trim();
+
+    if (!newName || !newEmoji) {
+        alert('Name and emoji cannot be empty.');
+        return;
+    }
+
+    await db.ref(`/users/${currentUser.uid}`).update({ name: newName, emoji: newEmoji });
+    
+    currentUserProfile.name = newName;
+    currentUserProfile.emoji = newEmoji;
+
+    showMyProfile(); // Refresh and reset view
+}
+
+
+// --- MAIN APP INITIALIZATION & LISTENERS ---
+function initializeAppUI() {
+    cleanupListeners(); // Ensure old listeners are gone before starting new ones
+    
+    listenForContacts();
+    listenForNotifications();
+    listenForCallLogs();
+    listenForIncomingCalls();
+    listenForUnreadMessages();
+}
+
+function cleanupListeners() {
+    Object.values(activeListeners).forEach(ref => ref.off());
+    activeListeners = {};
+}
+
+function listenForContacts() {
+    const contactsRef = db.ref(`/contacts/${currentUser.uid}`);
+    activeListeners.contacts = contactsRef;
+    
+    contactsRef.on('value', snapshot => {
+        const contactListEl = document.getElementById('contact-list');
+        contactListEl.innerHTML = '';
+        if (!snapshot.exists()) {
+            contactListEl.innerHTML = '<p>Add friends to start chatting!</p>';
+            return;
+        }
+        snapshot.forEach(childSnapshot => {
+            const contactData = childSnapshot.val();
+            fetchUserProfile(contactData.uid).then(profile => {
+                if (profile) {
+                    const contactEl = document.createElement('div');
+                    contactEl.className = 'list-item';
+                    contactEl.innerHTML = `
+                        <div class="item-emoji">${profile.emoji}</div>
+                        <div class="item-info">
+                            <div class="item-name">${profile.name}</div>
+                            <div class="item-detail">${profile.connectId}</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="call-btn" data-type="voice">Call</button>
+                            <button class="call-btn" data-type="video">Video</button>
+                        </div>
+                    `;
+                    contactEl.querySelector('.item-info').addEventListener('click', () => showChatPage(profile));
+                    contactEl.querySelectorAll('.call-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            initiateCall(profile.uid, e.target.dataset.type);
                         });
                     });
+                    contactListEl.appendChild(contactEl);
+                }
+            });
+        });
+    });
+}
+
+function listenForNotifications() {
+    const notificationsRef = db.ref(`/notifications/${currentUser.uid}`);
+    activeListeners.notifications = notificationsRef;
+
+    notificationsRef.on('value', snapshot => {
+        const listEl = document.getElementById('notification-list');
+        listEl.innerHTML = '';
+        const badgeEl = document.querySelector('#nav-notifications .badge');
+
+        if (!snapshot.exists()) {
+            listEl.innerHTML = '<p>No new notifications.</p>';
+            if (badgeEl) badgeEl.remove();
+            return;
+        }
+
+        if (!badgeEl) {
+            const newBadge = document.createElement('span');
+            newBadge.className = 'badge';
+            document.getElementById('nav-notifications').appendChild(newBadge);
+        }
+        document.querySelector('#nav-notifications .badge').textContent = snapshot.numChildren();
+        
+        snapshot.forEach(childSnapshot => {
+            const notif = childSnapshot.val();
+            const notifKey = childSnapshot.key;
+            if (notif.type === 'friend_request') {
+                fetchUserProfile(notif.from).then(profile => {
+                   const itemEl = document.createElement('div');
+                   itemEl.className = 'list-item';
+                   itemEl.innerHTML = `
+                        <div class="item-emoji">${profile.emoji}</div>
+                        <div class="item-info">
+                            <div class="item-name">${profile.name}</div>
+                            <div class="item-detail">Sent you a friend request</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="accept-friend" data-uid="${notif.from}">Accept</button>
+                            <button class="reject-friend reject" data-uid="${notif.from}">Reject</button>
+                        </div>
+                   `;
+                   listEl.appendChild(itemEl);
                 });
             }
+        });
+        
+        // Add event listeners after rendering
+        setTimeout(() => {
+            document.querySelectorAll('.accept-friend').forEach(btn => btn.addEventListener('click', (e) => handleFriendRequest(e.target.dataset.uid, true)));
+            document.querySelectorAll('.reject-friend').forEach(btn => btn.addEventListener('click', (e) => handleFriendRequest(e.target.dataset.uid, false)));
+        }, 100);
+    });
+}
 
-            function openChatView(peerId, peerData) {
-                const chatId = [currentUser.uid, peerId].sort().join('_');
-                const chatView = document.getElementById('chat-view');
-                chatView.innerHTML = `
-                    <div class="chat-header">
-                        <button class="back-btn">←</button>
-                        <div class="contact-name">${peerData.name}</div>
-                        <button class="call-btn">Call</button>
-                    </div>
-                    <div class="messages-container"></div>
-                    <div class="message-input-container">
-                        <input class="message-input" placeholder="Type a message...">
-                        <button class="send-btn">Send</button>
-                    </div>
-                `;
-                chatView.classList.add('active');
-                chatView.querySelector('.back-btn').onclick = () => chatView.classList.remove('active');
-                chatView.querySelector('.send-btn').onclick = () => {
-                    const input = chatView.querySelector('.message-input');
-                    if(input.value) {
-                        db.ref(`messages/${chatId}`).push({ text: input.value, senderId: currentUser.uid, timestamp: firebase.database.ServerValue.TIMESTAMP });
-                        input.value = '';
-                    }
-                };
+function listenForCallLogs() {
+    const callLogsRef = db.ref(`/callLogs/${currentUser.uid}`).limitToLast(20);
+    activeListeners.callLogs = callLogsRef;
 
-                const messagesContainer = chatView.querySelector('.messages-container');
-                db.ref(`messages/${chatId}`).limitToLast(50).on('child_added', snap => {
-                    const msg = snap.val();
-                    const bubble = document.createElement('div');
-                    bubble.className = `message-bubble ${msg.senderId === currentUser.uid ? 'sent' : 'received'}`;
-                    bubble.textContent = msg.text;
-                    messagesContainer.appendChild(bubble);
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                });
+    callLogsRef.on('value', snapshot => {
+        const listEl = document.getElementById('call-log-list');
+        listEl.innerHTML = '';
+        if (!snapshot.exists()) {
+            listEl.innerHTML = '<p>No recent calls.</p>';
+            return;
+        }
+        
+        const logs = [];
+        snapshot.forEach(child => logs.push(child.val()));
+        logs.reverse(); // Show most recent first
+
+        logs.forEach(log => {
+             const itemEl = document.createElement('div');
+             itemEl.className = 'list-item';
+             const date = new Date(log.timestamp).toLocaleString();
+             itemEl.innerHTML = `
+                <div class="item-emoji">${log.partner.emoji}</div>
+                <div class="item-info">
+                    <div class="item-name">${log.partner.name} (${log.type} call)</div>
+                    <div class="item-detail">${log.status} - ${date}</div>
+                </div>
+             `;
+             listEl.appendChild(itemEl);
+        });
+    });
+}
+
+function listenForUnreadMessages() {
+    const unreadRef = db.ref(`/unreadCounts/${currentUser.uid}`);
+    activeListeners.unread = unreadRef;
+    
+    unreadRef.on('value', snapshot => {
+        let totalUnread = 0;
+        snapshot.forEach(chatSnapshot => {
+            totalUnread += chatSnapshot.val();
+        });
+        
+        const badgeEl = document.querySelector('#nav-home .badge');
+        if (totalUnread > 0) {
+            if (!badgeEl) {
+                const newBadge = document.createElement('span');
+                newBadge.className = 'badge';
+                document.getElementById('nav-home').appendChild(newBadge);
             }
+            document.querySelector('#nav-home .badge').textContent = totalUnread;
+        } else {
+            if (badgeEl) badgeEl.remove();
+        }
+    });
+}
 
-        })();
-    </script>
+// --- FRIEND SYSTEM ---
+async function handleAddFriend() {
+    const friendId = prompt('Enter the Connect-ID of the user you want to add:');
+    if (!friendId) return;
+
+    const usersRef = db.ref('users');
+    const snapshot = await usersRef.orderByChild('connectId').equalTo(friendId.trim()).once('value');
+
+    if (!snapshot.exists()) {
+        alert('User not found.');
+        return;
+    }
+
+    const recipientUid = Object.keys(snapshot.val())[0];
+    if (recipientUid === currentUser.uid) {
+        alert("You can't add yourself!");
+        return;
+    }
+
+    // Check if already friends
+    const contactCheck = await db.ref(`/contacts/${currentUser.uid}/${recipientUid}`).once('value');
+    if (contactCheck.exists()) {
+        alert("You are already friends with this user.");
+        return;
+    }
+
+    // Send request
+    const request = { from: currentUser.uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
+    await db.ref(`/requests/${recipientUid}/${currentUser.uid}`).set(request);
+
+    // Send notification
+    const notification = { type: 'friend_request', from: currentUser.uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
+    await db.ref(`/notifications/${recipientUid}`).push(notification);
+
+    alert('Friend request sent!');
+}
+
+async function handleFriendRequest(senderUid, accepted) {
+    const myUid = currentUser.uid;
+
+    // Remove request and notification regardless of choice
+    await db.ref(`/requests/${myUid}/${senderUid}`).remove();
+    const notifSnapshot = await db.ref(`/notifications/${myUid}`).orderByChild('from').equalTo(senderUid).once('value');
+    if (notifSnapshot.exists()) {
+        const notifKey = Object.keys(notifSnapshot.val())[0];
+        await db.ref(`/notifications/${myUid}/${notifKey}`).remove();
+    }
+    
+    if (accepted) {
+        // Add each other to contacts
+        const contactData = { uid: senderUid, addedAt: firebase.database.ServerValue.TIMESTAMP };
+        await db.ref(`/contacts/${myUid}/${senderUid}`).set(contactData);
+        
+        const myContactData = { uid: myUid, addedAt: firebase.database.ServerValue.TIMESTAMP };
+        await db.ref(`/contacts/${senderUid}/${myUid}`).set(myContactData);
+    }
+}
+
+
+// --- REALTIME MESSAGING ---
+function getChatId(uid1, uid2) {
+    return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+}
+
+function loadChatMessages(chatId) {
+    const messagesEl = document.getElementById('chat-messages');
+    messagesEl.innerHTML = '';
+    
+    const messagesRef = db.ref(`/messages/${chatId}`).limitToLast(50);
+    activeListeners[chatId] = messagesRef;
+
+    messagesRef.on('child_added', snapshot => {
+        const message = snapshot.val();
+        const messageEl = document.createElement('div');
+        messageEl.classList.add('message-bubble');
+        messageEl.classList.add(message.senderId === currentUser.uid ? 'sent' : 'received');
+        messageEl.textContent = message.text;
+        messagesEl.appendChild(messageEl);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
+}
+
+async function handleSendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+
+    if (text && currentChatId && currentChatPartner) {
+        const messageData = {
+            text: text,
+            senderId: currentUser.uid,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+        await db.ref(`/messages/${currentChatId}`).push(messageData);
+        
+        // Increment unread count for the partner
+        const unreadRef = db.ref(`/unreadCounts/${currentChatPartner.uid}/${currentChatId}`);
+        await unreadRef.transaction(count => (count || 0) + 1);
+        
+        input.value = '';
+    }
+}
+
+// --- WEBRTC CALLING ---
+const ringtone = document.getElementById('ringtone');
+
+function listenForIncomingCalls() {
+    const callRef = db.ref(`/calls/${currentUser.uid}`);
+    activeListeners.calls = callRef;
+
+    callRef.on('value', async snapshot => {
+        if (snapshot.exists()) {
+            incomingCallData = snapshot.val();
+            const callerProfile = await fetchUserProfile(incomingCallData.callerId);
+
+            document.getElementById('incoming-caller-name').textContent = callerProfile.name;
+            document.getElementById('incoming-caller-emoji').textContent = callerProfile.emoji;
+            document.getElementById('incoming-call-type').textContent = `Incoming ${incomingCallData.type} call`;
+            document.getElementById('incoming-call-modal').style.display = 'flex';
+            ringtone.play();
+        } else {
+            // Call was cancelled or doesn't exist
+            if (document.getElementById('incoming-call-modal').style.display === 'flex') {
+                document.getElementById('incoming-call-modal').style.display = 'none';
+                ringtone.pause();
+                ringtone.currentTime = 0;
+            }
+        }
+    });
+}
+
+async function initiateCall(partnerUid, type) {
+    const callData = {
+        callerId: currentUser.uid,
+        calleeId: partnerUid,
+        type: type,
+        status: 'dialing',
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    peerConnection = new RTCPeerConnection(rtcConfig);
+    
+    if (type === 'video') {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('local-video').srcObject = localStream;
+    } else {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+    
+    peerConnection.onicecandidate = event => {
+        if (event.candidate) {
+            db.ref(`/calls/${partnerUid}/iceCandidates/caller`).push(event.candidate.toJSON());
+        }
+    };
+    
+    peerConnection.ontrack = event => {
+        remoteStream = event.streams[0];
+        document.getElementById('remote-video').srcObject = remoteStream;
+    };
+
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    
+    callData.offer = { type: offer.type, sdp: offer.sdp };
+
+    await db.ref(`/calls/${partnerUid}`).set(callData);
+    
+    const partnerProfile = await fetchUserProfile(partnerUid);
+    showCallUI(partnerProfile, type, 'Calling...');
+    
+    // Listen for answer
+    const answerRef = db.ref(`/calls/${partnerUid}/answer`);
+    activeListeners.callAnswer = answerRef;
+    answerRef.on('value', async snapshot => {
+        if (snapshot.exists()) {
+            const answer = snapshot.val();
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+            document.getElementById('call-view-status').textContent = 'Connected';
+            
+            // Listen for callee's ICE candidates
+            listenForIceCandidates(partnerUid, 'callee');
+            answerRef.off();
+        }
+    });
+}
+
+async function handleAcceptCall() {
+    ringtone.pause();
+    ringtone.currentTime = 0;
+    document.getElementById('incoming-call-modal').style.display = 'none';
+
+    peerConnection = new RTCPeerConnection(rtcConfig);
+
+    if (incomingCallData.type === 'video') {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('local-video').srcObject = localStream;
+    } else {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+    
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+    peerConnection.onicecandidate = event => {
+        if (event.candidate) {
+            db.ref(`/calls/${currentUser.uid}/iceCandidates/callee`).push(event.candidate.toJSON());
+        }
+    };
+    
+    peerConnection.ontrack = event => {
+        remoteStream = event.streams[0];
+        document.getElementById('remote-video').srcObject = remoteStream;
+    };
+    
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    
+    await db.ref(`/calls/${currentUser.uid}/answer`).set({ type: answer.type, sdp: answer.sdp });
+    await db.ref(`/calls/${currentUser.uid}/status`).set('connected');
+
+    const callerProfile = await fetchUserProfile(incomingCallData.callerId);
+    showCallUI(callerProfile, incomingCallData.type, 'Connected');
+    listenForIceCandidates(currentUser.uid, 'caller');
+}
+
+function handleRejectCall() {
+    ringtone.pause();
+    ringtone.currentTime = 0;
+    document.getElementById('incoming-call-modal').style.display = 'none';
+    
+    logCall(incomingCallData.callerId, currentUser.uid, incomingCallData.type, 'rejected');
+    db.ref(`/calls/${currentUser.uid}`).remove();
+    incomingCallData = null;
+}
+
+function listenForIceCandidates(callPathUid, role) {
+    const iceRef = db.ref(`/calls/${callPathUid}/iceCandidates/${role}`);
+    activeListeners.iceCandidates = iceRef;
+    
+    iceRef.on('child_added', snapshot => {
+        if (snapshot.exists()) {
+            peerConnection.addIceCandidate(new RTCIceCandidate(snapshot.val()));
+        }
+    });
+}
+
+function showCallUI(partner, type, status) {
+    document.getElementById('call-view-emoji').textContent = partner.emoji;
+    document.getElementById('call-view-name').textContent = partner.name;
+    document.getElementById('call-view-status').textContent = status;
+
+    if (type === 'voice') {
+        document.getElementById('local-video').style.display = 'none';
+        document.getElementById('remote-video').style.display = 'none';
+        document.querySelector('.call-info').style.position = 'static';
+        document.querySelector('.call-info').style.transform = 'none';
+    } else {
+        document.getElementById('local-video').style.display = 'block';
+        document.getElementById('remote-video').style.display = 'block';
+        document.querySelector('.call-info').style.position = 'absolute';
+        document.querySelector('.call-info').style.transform = 'translateX(-50%)';
+    }
+    document.getElementById('call-view').style.display = 'flex';
+}
+
+function endCall() {
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    
+    document.getElementById('call-view').style.display = 'none';
+    document.getElementById('local-video').srcObject = null;
+    document.getElementById('remote-video').srcObject = null;
+
+    // Determine who to clean up and log
+    // This part can be complex; a simple approach is for both parties to clean up their relevant paths
+    // A robust solution would use a 'disconnect' or 'end' signal in the DB.
+    
+    // For simplicity, the initiator cleans the full record
+    const callRef = db.ref(`/calls/`); 
+    callRef.orderByChild('callerId').equalTo(currentUser.uid).once('value').then(snap => {
+        if(snap.exists()) {
+            const callKey = Object.keys(snap.val())[0];
+            const callData = Object.values(snap.val())[0];
+            logCall(callData.callerId, callData.calleeId, callData.type, 'completed');
+            db.ref(`/calls/${callKey}`).remove();
+        }
+    });
+    callRef.orderByChild('calleeId').equalTo(currentUser.uid).once('value').then(snap => {
+         if(snap.exists()) {
+            const callKey = Object.keys(snap.val())[0];
+             const callData = Object.values(snap.val())[0];
+            logCall(callData.callerId, callData.calleeId, callData.type, 'completed');
+            db.ref(`/calls/${callKey}`).remove();
+        }
+    });
+
+    // Clean up listeners
+    if (activeListeners.callAnswer) activeListeners.callAnswer.off();
+    if (activeListeners.iceCandidates) activeListeners.iceCandidates.off();
+}
+
+async function logCall(callerId, calleeId, type, status) {
+    const callerProfile = await fetchUserProfile(callerId);
+    const calleeProfile = await fetchUserProfile(calleeId);
+
+    const log = {
+        type,
+        status,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    };
+
+    // Log for caller
+    db.ref(`/callLogs/${callerId}`).push({ ...log, partner: { uid: calleeId, name: calleeProfile.name, emoji: calleeProfile.emoji } });
+    // Log for callee
+    db.ref(`/callLogs/${calleeId}`).push({ ...log, partner: { uid: callerId, name: callerProfile.name, emoji: callerProfile.emoji } });
+}
+
+
+// --- UTILITY FUNCTIONS ---
+function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    if (document.body.classList.contains('light-theme')) {
+        localStorage.setItem('theme', 'light');
+    } else {
+        localStorage.removeItem('theme');
+    }
+}
+
+function makeElementDraggable(elmnt) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    elmnt.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+</script>
 </body>
 </html>
