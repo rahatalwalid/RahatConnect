@@ -555,7 +555,7 @@
             </header>
             <main id="content-pages">
                 <div id="home-page" class="page active"><div id="contact-list"></div></div>
-                <div id="notifications-page" class="page"><h2>Notifications</h2><div id="notification-list"></div></div>
+                <div id="notifications-page" class="page"><h2>Friend Requests</h2><div id="notification-list"></div></div>
                 <div id="calls-page" class="page"><h2>Call Logs</h2><div id="call-log-list"></div></div>
             </main>
             <div id="chat-page" class="page">
@@ -649,11 +649,7 @@ let remoteStream;
 let peerConnection;
 let incomingCallData;
 let activeListeners = {};
-const rtcConfig = {
-    iceServers: [{
-        urls: 'stun:stun.l.google.com:19302'
-    }]
-};
+const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
 // --- DOM ELEMENTS (Cached for performance) ---
 const authView = document.getElementById('auth-view');
@@ -697,7 +693,8 @@ function initializeAppUI() {
     mainAppView.style.display = 'flex';
     listenForBlockedUsers();
     listenForContacts();
-    listenForNotifications();
+    listenForFriendRequests(); // This function now correctly handles the UI list.
+    listenForNotifications(); // This function now ONLY handles the badge count.
     listenForCallLogs();
     listenForIncomingCalls();
     listenForUnreadMessages();
@@ -714,23 +711,16 @@ function cleanupListeners() {
 
 // --- UI & VIEW MANAGEMENT ---
 function showPage(pageId) {
-    document.querySelectorAll('#main-app-view .page').forEach(page => {
-        page.classList.remove('active');
-    });
+    document.querySelectorAll('#main-app-view .page').forEach(page => page.classList.remove('active'));
     const targetPage = document.getElementById(pageId);
-    if(targetPage){
-        targetPage.classList.add('active');
-    }
-
+    if(targetPage) targetPage.classList.add('active');
     const isChatPage = (pageId === 'chat-page');
     document.getElementById('content-pages').style.display = isChatPage ? 'none' : 'block';
     document.getElementById('chat-page').style.display = isChatPage ? 'flex' : 'none';
 }
 
 function showAuthView() {
-    currentUser = null;
-    currentUserProfile = null;
-    blockedUsers = {};
+    currentUser = null; currentUserProfile = null; blockedUsers = {};
     cleanupListeners();
     authView.style.display = 'flex';
     mainAppView.style.display = 'none';
@@ -743,16 +733,9 @@ function showProfileSetup() {
 }
 
 async function showChatPage(partnerData) {
-    if (blockedUsers[partnerData.uid]) {
-        alert(`You have blocked ${partnerData.name}. You must unblock them to chat.`);
-        return;
-    }
-    const heBlockedMeSnapshot = await db.ref(`/blocked/${partnerData.uid}/${currentUser.uid}`).once('value');
-    if (heBlockedMeSnapshot.exists()) {
-        alert(`${partnerData.name} has blocked you.`);
-        return;
-    }
-    
+    if (blockedUsers[partnerData.uid]) { alert(`You have blocked ${partnerData.name}.`); return; }
+    const heBlockedMe = (await db.ref(`/blocked/${partnerData.uid}/${currentUser.uid}`).once('value')).exists();
+    if (heBlockedMe) { alert(`${partnerData.name} has blocked you.`); return; }
     currentChatPartner = partnerData;
     currentChatId = getChatId(currentUser.uid, partnerData.uid);
     showPage('chat-page');
@@ -800,17 +783,7 @@ async function handleProfileSetup() {
     const name = document.getElementById('profile-name-input').value.trim(), emoji = document.getElementById('profile-emoji-input').value.trim(), btn = document.getElementById('save-profile-btn');
     if (!name || !emoji) { return alert('Please fill out both name and emoji.'); }
     btn.disabled = true; btn.textContent = 'Saving...';
-    try {
-        const connectId = await generateUniqueConnectId();
-        await db.ref(`/users/${currentUser.uid}`).set({ name, emoji, connectId, uid: currentUser.uid });
-        document.getElementById('profile-setup-modal').style.display = 'none';
-        // The onAuthStateChanged listener will automatically pick up the new profile and initialize the app
-    } catch(error) {
-        alert('Could not save profile. Please try again.');
-        console.error("Profile save error:", error);
-    } finally {
-        btn.disabled = false; btn.textContent = 'Save Profile';
-    }
+    try { const connectId = await generateUniqueConnectId(); await db.ref(`/users/${currentUser.uid}`).set({ name, emoji, connectId, uid: currentUser.uid }); document.getElementById('profile-setup-modal').style.display = 'none'; } catch(error) { alert('Could not save profile.'); console.error("Profile save error:", error); } finally { btn.disabled = false; btn.textContent = 'Save Profile'; }
 }
 async function generateUniqueConnectId() { let id, exists; do { id = `Connect-${Math.floor(1000 + Math.random() * 9000)}`; exists = (await db.ref('users').orderByChild('connectId').equalTo(id).once('value')).exists(); } while (exists); return id; }
 function showMyProfile() { document.getElementById('menu-modal').style.display = 'none'; document.getElementById('my-profile-modal').style.display = 'flex'; document.getElementById('profile-view-name').textContent = currentUserProfile.name; document.getElementById('profile-view-emoji').textContent = currentUserProfile.emoji; document.getElementById('profile-view-id').textContent = currentUserProfile.connectId; document.getElementById('profile-edit-name').style.display = 'none'; document.getElementById('profile-edit-emoji').style.display = 'none'; document.getElementById('profile-save-changes-btn').style.display = 'none'; document.getElementById('profile-edit-btn').style.display = 'block'; }
@@ -825,24 +798,33 @@ async function handleAddFriend() {
     if (!snapshot.exists()) return alert('User not found.');
     const recipientUid = Object.keys(snapshot.val())[0];
     if (recipientUid === currentUser.uid) return alert("You can't add yourself!");
-    const contactCheck = await db.ref(`/contacts/${currentUser.uid}/${recipientUid}`).once('value');
-    if (contactCheck.exists()) return alert("You are already friends.");
-    const requestCheck = await db.ref(`/requests/${recipientUid}/${currentUser.uid}`).once('value');
-    if (requestCheck.exists()) return alert("A friend request has already been sent.");
-    
+    if ((await db.ref(`/contacts/${currentUser.uid}/${recipientUid}`).once('value')).exists()) return alert("You are already friends.");
+    if ((await db.ref(`/requests/${recipientUid}/${currentUser.uid}`).once('value')).exists()) return alert("A friend request has already been sent.");
     await db.ref(`/requests/${recipientUid}/${currentUser.uid}`).set({ from: currentUser.uid, timestamp: firebase.database.ServerValue.TIMESTAMP });
-    await db.ref(`/notifications/${recipientUid}`).push({ type: 'friend_request', from: currentUser.uid });
+    await db.ref(`/notifications/${recipientUid}`).push({ type: 'friend_request' }); // Simplified notification
     alert('Friend request sent!');
 }
-async function handleFriendRequest(senderUid, notifKey, accepted) {
+
+async function handleFriendRequest(senderUid, accepted) {
     const myUid = currentUser.uid;
+
+    // 1. Remove the request object
     await db.ref(`/requests/${myUid}/${senderUid}`).remove();
-    await db.ref(`/notifications/${myUid}/${notifKey}`).remove();
+
+    // 2. Find and remove the corresponding notification pointer
+    const notifSnapshot = await db.ref(`/notifications/${myUid}`).orderByChild('from').equalTo(senderUid).once('value');
+    if (notifSnapshot.exists()) {
+        const notifKey = Object.keys(notifSnapshot.val())[0];
+        await db.ref(`/notifications/${myUid}/${notifKey}`).remove();
+    }
+    
+    // 3. If accepted, create contacts for both users
     if (accepted) {
         await db.ref(`/contacts/${myUid}/${senderUid}`).set({ addedAt: firebase.database.ServerValue.TIMESTAMP });
         await db.ref(`/contacts/${senderUid}/${myUid}`).set({ addedAt: firebase.database.ServerValue.TIMESTAMP });
     }
 }
+
 async function showBlockedUsers() {
     document.getElementById('menu-modal').style.display = 'none';
     document.getElementById('blocked-users-modal').style.display = 'flex';
@@ -883,34 +865,70 @@ function listenForContacts() {
         });
     });
 }
+
+/**
+ * [CORRECTED] This function now correctly listens to the /requests path
+ * to build the UI for incoming friend requests. This is the source of truth.
+ */
+function listenForFriendRequests() {
+    const ref = db.ref(`/requests/${currentUser.uid}`);
+    activeListeners.requests = ref;
+    ref.on('value', snap => {
+        const listEl = document.getElementById('notification-list');
+        listEl.innerHTML = '';
+        if (!snap.exists()) {
+            listEl.innerHTML = '<p>No new friend requests.</p>';
+            return;
+        }
+        
+        snap.forEach(child => {
+            const request = child.val();
+            const senderUid = child.key; // The key of the request IS the sender's UID
+            fetchUserProfile(senderUid).then(profile => {
+                if (profile) {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'list-item';
+                    itemEl.innerHTML = `
+                        <div class="list-item-main">
+                            <div class="item-emoji">${profile.emoji}</div>
+                            <div class="item-info">
+                                <div class="item-name">${profile.name}</div>
+                                <div class="item-detail">Wants to be your friend</div>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="accept-friend" data-uid="${senderUid}">Accept</button>
+                            <button class="reject-friend reject-btn" data-uid="${senderUid}">Reject</button>
+                        </div>`;
+                    itemEl.querySelector('.accept-friend').addEventListener('click', e => handleFriendRequest(e.target.dataset.uid, true));
+                    itemEl.querySelector('.reject-friend').addEventListener('click', e => handleFriendRequest(e.target.dataset.uid, false));
+                    listEl.appendChild(itemEl);
+                }
+            });
+        });
+    });
+}
+
+
+/**
+ * This listener is now ONLY for the badge count. It does not build UI.
+ */
 function listenForNotifications() {
     const ref = db.ref(`/notifications/${currentUser.uid}`);
     activeListeners.notifications = ref;
     ref.on('value', snap => {
-        const listEl = document.getElementById('notification-list'); listEl.innerHTML = '';
         const badgeEl = document.querySelector('#nav-notifications .badge');
         if(badgeEl) badgeEl.remove();
 
-        if (!snap.exists()) { listEl.innerHTML = '<p>No new notifications.</p>'; return; }
-
-        const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = snap.numChildren(); document.getElementById('nav-notifications').appendChild(badge);
-        
-        snap.forEach(child => {
-            const notif = child.val(), key = child.key;
-            if (notif.type === 'friend_request') {
-                fetchUserProfile(notif.from).then(profile => {
-                    if (profile) {
-                        const itemEl = document.createElement('div'); itemEl.className = 'list-item';
-                        itemEl.innerHTML = `<div class="list-item-main"><div class="item-emoji">${profile.emoji}</div><div class="item-info"><div class="item-name">${profile.name}</div><div class="item-detail">Sent a friend request</div></div></div><div class="item-actions"><button class="accept-friend" data-uid="${notif.from}" data-key="${key}">Accept</button><button class="reject-friend reject-btn" data-uid="${notif.from}" data-key="${key}">Reject</button></div>`;
-                        itemEl.querySelector('.accept-friend').addEventListener('click', e => handleFriendRequest(e.target.dataset.uid, e.target.dataset.key, true));
-                        itemEl.querySelector('.reject-friend').addEventListener('click', e => handleFriendRequest(e.target.dataset.uid, e.target.dataset.key, false));
-                        listEl.appendChild(itemEl);
-                    }
-                });
-            }
-        });
+        if (snap.exists()) {
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.textContent = snap.numChildren();
+            document.getElementById('nav-notifications').appendChild(badge);
+        }
     });
 }
+
 function listenForCallLogs() { const ref = db.ref(`/callLogs/${currentUser.uid}`).limitToLast(20); activeListeners.callLogs = ref; ref.on('value', snap => { const listEl = document.getElementById('call-log-list'); listEl.innerHTML = ''; if (!snap.exists()) { listEl.innerHTML = '<p>No recent calls.</p>'; return; } const logs = []; snap.forEach(c => logs.push(c.val())); logs.reverse().forEach(log => { const el = document.createElement('div'); el.className = 'list-item'; el.innerHTML = `<div class="item-emoji">${log.partner.emoji}</div><div class="item-info"><div class="item-name">${log.partner.name} (${log.type} call)</div><div class="item-detail">${log.status} - ${new Date(log.timestamp).toLocaleString()}</div></div>`; listEl.appendChild(el); }); }); }
 function listenForUnreadMessages() { const ref = db.ref(`/unreadCounts/${currentUser.uid}`); activeListeners.unread = ref; ref.on('value', snap => { let total = 0; snap.forEach(c => total += c.val()); const badge = document.querySelector('#nav-home .badge'); if (total > 0) { if (!badge) { const b = document.createElement('span'); b.className = 'badge'; document.getElementById('nav-home').appendChild(b); } document.querySelector('#nav-home .badge').textContent = total; } else if(badge) { badge.remove(); } }); }
 
