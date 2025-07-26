@@ -124,8 +124,12 @@
             transition: box-shadow 0.3s ease, transform 0.2s ease;
             font-size: 16px;
         }
+        .auth-form button:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
 
-        .auth-form button:hover {
+        .auth-form button:hover:not(:disabled) {
             box-shadow: 0 0 15px var(--primary-color), 0 0 25px var(--primary-color);
             transform: translateY(-2px);
         }
@@ -276,7 +280,7 @@
 
         /* --- CHAT PAGE --- */
         #chat-page {
-            display: flex;
+            display: none; /* Changed from 'flex' to 'none' by default */
             flex-direction: column;
             height: 100%;
         }
@@ -358,7 +362,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            display: flex;
+            display: none; /* Changed from 'flex' to 'none' */
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -413,6 +417,11 @@
         .modal-content button.secondary {
             background-color: #555;
         }
+        .modal-content button:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
+
 
         /* --- CALL UI --- */
         #call-view {
@@ -543,23 +552,23 @@
                     <h2>Call Logs</h2>
                     <div id="call-log-list"></div>
                 </div>
-                
-                <!-- Chat Page (dynamically populated) -->
-                <div id="chat-page" class="page">
-                    <div id="chat-header">
-                        <button id="back-to-home-btn" class="nav-btn">Back</button>
-                        <div class="item-emoji" id="chat-header-emoji"></div>
-                        <div class="item-info">
-                            <div class="item-name" id="chat-header-name"></div>
-                        </div>
-                    </div>
-                    <div id="chat-messages"></div>
-                    <div id="chat-input-container">
-                        <input type="text" id="chat-input" placeholder="Type a message...">
-                        <button id="send-message-btn">Send</button>
+            </main>
+            
+            <!-- Chat Page (dynamically populated) -->
+            <div id="chat-page" class="page">
+                <div id="chat-header">
+                    <button id="back-to-home-btn" class="nav-btn">Back</button>
+                    <div class="item-emoji" id="chat-header-emoji"></div>
+                    <div class="item-info">
+                        <div class="item-name" id="chat-header-name"></div>
                     </div>
                 </div>
-            </main>
+                <div id="chat-messages"></div>
+                <div id="chat-input-container">
+                    <input type="text" id="chat-input" placeholder="Type a message...">
+                    <button id="send-message-btn">Send</button>
+                </div>
+            </div>
 
             <footer>
                 <button id="nav-home" class="nav-btn">Home</button>
@@ -572,7 +581,7 @@
     <!-- MODALS & OVERLAYS -->
     
     <!-- Profile Setup Modal -->
-    <div id="profile-setup-modal" class="modal-overlay" style="display: none;">
+    <div id="profile-setup-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Setup Your Profile</h2>
             <input type="text" id="profile-name-input" placeholder="Your Name">
@@ -582,7 +591,7 @@
     </div>
 
     <!-- Incoming Call Modal -->
-    <div id="incoming-call-modal" class="modal-overlay" style="display: none;">
+    <div id="incoming-call-modal" class="modal-overlay">
         <div class="modal-content">
             <h2 id="incoming-call-type">Incoming Call</h2>
             <div style="text-align: center;">
@@ -597,7 +606,7 @@
     </div>
     
     <!-- Menu Modal -->
-    <div id="menu-modal" class="modal-overlay" style="display: none;">
+    <div id="menu-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>Menu</h2>
             <button id="menu-profile-btn">My Profile</button>
@@ -609,7 +618,7 @@
     </div>
 
     <!-- My Profile Modal -->
-     <div id="my-profile-modal" class="modal-overlay" style="display: none;">
+     <div id="my-profile-modal" class="modal-overlay">
         <div class="modal-content">
             <h2>My Profile</h2>
             <p><strong>Name:</strong> <span id="profile-view-name"></span></p>
@@ -644,7 +653,6 @@
     
 <script>
 // --- FIREBASE CONFIGURATION ---
-// IMPORTANT: Replace with your own Firebase project configuration.
 const firebaseConfig = {
     apiKey: "AIzaSyCyi55rVrsBtF9HpqMWz2a4H4ggwSkJ6z4",
     authDomain: "rahatconnect-e9755.firebaseapp.com",
@@ -654,69 +662,6 @@ const firebaseConfig = {
     messagingSenderId: "326989187761",
     appId: "1:326989187761:web:b2800fdbadb32b2a3af090"
 };
-
-/* 
---- RECOMMENDED FIREBASE REALTIME DATABASE RULES ---
-{
-  "rules": {
-    "users": {
-      ".read": "auth != null",
-      "$uid": {
-        ".write": "$uid === auth.uid"
-      }
-    },
-    "requests": {
-      "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "auth != null"
-      }
-    },
-    "contacts": {
-      "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "auth != null"
-      }
-    },
-    "messages": {
-      "$chatId": {
-        ".read": "auth != null && $chatId.includes(auth.uid)",
-        ".write": "auth != null && $chatId.includes(auth.uid)",
-        ".indexOn": "timestamp"
-      }
-    },
-    "calls": {
-      "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "auth != null"
-      }
-    },
-    "callLogs": {
-      "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "auth != null"
-      }
-    },
-    "blocked": {
-        "$uid": {
-            ".read": "$uid === auth.uid",
-            ".write": "auth != null"
-        }
-    },
-    "unreadCounts": {
-        "$uid": {
-            ".read": "$uid === auth.uid",
-            ".write": "auth != null"
-        }
-    },
-    "notifications": {
-        "$uid": {
-            ".read": "$uid === auth.uid",
-            ".write": "auth != null"
-        }
-    }
-  }
-}
-*/
 
 // --- INITIALIZE FIREBASE v8 ---
 firebase.initializeApp(firebaseConfig);
@@ -732,7 +677,7 @@ let localStream = null;
 let remoteStream = null;
 let peerConnection = null;
 let incomingCallData = null;
-let activeListeners = {}; // To keep track of active Firebase listeners
+let activeListeners = {}; 
 
 const rtcConfig = {
     iceServers: [
@@ -759,25 +704,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Auth state listener
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async (user) => {
         if (user) {
             currentUser = user;
-            fetchUserProfile(user.uid).then(profile => {
-                if (profile) {
+            try {
+                const profile = await fetchUserProfile(user.uid);
+                
+                // Check if profile exists and is valid
+                if (profile && profile.name) {
                     currentUserProfile = profile;
                     initializeAppUI();
                     authView.style.display = 'none';
                     mainAppView.style.display = 'flex';
                 } else {
+                    // This handles both new signups and existing users with missing profiles
+                    authView.style.display = 'none';
+                    mainAppView.style.display = 'none';
                     document.getElementById('profile-setup-modal').style.display = 'flex';
                 }
-            });
+            } catch (error) {
+                console.error("Error fetching user profile:", error);
+                // Fallback to auth view on error
+                auth.signOut(); 
+            }
         } else {
             currentUser = null;
             currentUserProfile = null;
             authView.style.display = 'flex';
             mainAppView.style.display = 'none';
-            cleanupListeners(); // Clean up listeners on logout
+            cleanupListeners();
         }
     });
 
@@ -787,21 +742,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- UI & VIEW MANAGEMENT ---
 function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+    document.querySelectorAll('#content-pages .page').forEach(page => page.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
     
-    if (pageId !== 'chat-page') {
+    if (pageId === 'chat-page') {
+        document.getElementById('content-pages').style.display = 'none';
+        document.getElementById('chat-page').style.display = 'flex';
+    } else {
         document.getElementById('content-pages').style.display = 'block';
         document.getElementById('chat-page').style.display = 'none';
     }
 }
 
+
 function showChatPage(partnerData) {
     currentChatPartner = partnerData;
     currentChatId = getChatId(currentUser.uid, partnerData.uid);
 
-    document.getElementById('content-pages').style.display = 'none';
-    document.getElementById('chat-page').style.display = 'flex';
+    showPage('chat-page');
     
     document.getElementById('chat-header-emoji').textContent = partnerData.emoji;
     document.getElementById('chat-header-name').textContent = partnerData.name;
@@ -908,27 +866,41 @@ async function fetchUserProfile(uid) {
 async function handleProfileSetup() {
     const name = document.getElementById('profile-name-input').value.trim();
     const emoji = document.getElementById('profile-emoji-input').value.trim();
+    const saveBtn = document.getElementById('save-profile-btn');
     
     if (!name || !emoji) {
         alert('Please fill out both name and emoji.');
         return;
     }
 
-    const connectId = await generateUniqueConnectId();
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
     
-    const profileData = {
-        name,
-        emoji,
-        connectId,
-        uid: currentUser.uid,
-    };
+    try {
+        const connectId = await generateUniqueConnectId();
+        
+        const profileData = {
+            name,
+            emoji,
+            connectId,
+            uid: currentUser.uid,
+        };
 
-    await db.ref(`/users/${currentUser.uid}`).set(profileData);
-    currentUserProfile = profileData;
-    document.getElementById('profile-setup-modal').style.display = 'none';
-    initializeAppUI();
-    authView.style.display = 'none';
-    mainAppView.style.display = 'flex';
+        await db.ref(`/users/${currentUser.uid}`).set(profileData);
+        currentUserProfile = profileData;
+        
+        document.getElementById('profile-setup-modal').style.display = 'none';
+        initializeAppUI();
+        authView.style.display = 'none';
+        mainAppView.style.display = 'flex';
+
+    } catch(error) {
+        console.error("Error saving profile:", error);
+        alert("Could not save profile. Please try again.");
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Profile';
+    }
 }
 
 async function generateUniqueConnectId() {
@@ -994,7 +966,8 @@ async function saveProfileChanges() {
 
 // --- MAIN APP INITIALIZATION & LISTENERS ---
 function initializeAppUI() {
-    cleanupListeners(); // Ensure old listeners are gone before starting new ones
+    cleanupListeners();
+    showPage('home-page');
     
     listenForContacts();
     listenForNotifications();
@@ -1004,7 +977,11 @@ function initializeAppUI() {
 }
 
 function cleanupListeners() {
-    Object.values(activeListeners).forEach(ref => ref.off());
+    Object.values(activeListeners).forEach(ref => {
+        if (ref && typeof ref.off === 'function') {
+            ref.off();
+        }
+    });
     activeListeners = {};
 }
 
@@ -1032,15 +1009,15 @@ function listenForContacts() {
                             <div class="item-detail">${profile.connectId}</div>
                         </div>
                         <div class="item-actions">
-                            <button class="call-btn" data-type="voice">Call</button>
-                            <button class="call-btn" data-type="video">Video</button>
+                            <button class="call-btn" data-uid="${profile.uid}" data-type="voice">Call</button>
+                            <button class="call-btn" data-uid="${profile.uid}" data-type="video">Video</button>
                         </div>
                     `;
                     contactEl.querySelector('.item-info').addEventListener('click', () => showChatPage(profile));
                     contactEl.querySelectorAll('.call-btn').forEach(btn => {
                         btn.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            initiateCall(profile.uid, e.target.dataset.type);
+                            initiateCall(e.target.dataset.uid, e.target.dataset.type);
                         });
                     });
                     contactListEl.appendChild(contactEl);
@@ -1086,8 +1063,8 @@ function listenForNotifications() {
                             <div class="item-detail">Sent you a friend request</div>
                         </div>
                         <div class="item-actions">
-                            <button class="accept-friend" data-uid="${notif.from}">Accept</button>
-                            <button class="reject-friend reject" data-uid="${notif.from}">Reject</button>
+                            <button class="accept-friend" data-key="${notifKey}" data-uid="${notif.from}">Accept</button>
+                            <button class="reject-friend reject" data-key="${notifKey}" data-uid="${notif.from}">Reject</button>
                         </div>
                    `;
                    listEl.appendChild(itemEl);
@@ -1097,10 +1074,24 @@ function listenForNotifications() {
         
         // Add event listeners after rendering
         setTimeout(() => {
-            document.querySelectorAll('.accept-friend').forEach(btn => btn.addEventListener('click', (e) => handleFriendRequest(e.target.dataset.uid, true)));
-            document.querySelectorAll('.reject-friend').forEach(btn => btn.addEventListener('click', (e) => handleFriendRequest(e.target.dataset.uid, false)));
+            document.querySelectorAll('.accept-friend').forEach(btn => btn.addEventListener('click', (e) => handleFriendRequest(e.target.dataset.uid, true, e.target.dataset.key)));
+            document.querySelectorAll('.reject-friend').forEach(btn => btn.addEventListener('click', (e) => handleFriendRequest(e.target.dataset.uid, false, e.target.dataset.key)));
         }, 100);
     });
+}
+
+async function handleFriendRequest(senderUid, accepted, notifKey) {
+    const myUid = currentUser.uid;
+
+    await db.ref(`/notifications/${myUid}/${notifKey}`).remove();
+    
+    if (accepted) {
+        const contactData = { uid: senderUid, addedAt: firebase.database.ServerValue.TIMESTAMP };
+        await db.ref(`/contacts/${myUid}/${senderUid}`).set(contactData);
+        
+        const myContactData = { uid: myUid, addedAt: firebase.database.ServerValue.TIMESTAMP };
+        await db.ref(`/contacts/${senderUid}/${myUid}`).set(myContactData);
+    }
 }
 
 function listenForCallLogs() {
@@ -1185,36 +1176,11 @@ async function handleAddFriend() {
         return;
     }
 
-    // Send request
-    const request = { from: currentUser.uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
-    await db.ref(`/requests/${recipientUid}/${currentUser.uid}`).set(request);
-
     // Send notification
     const notification = { type: 'friend_request', from: currentUser.uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
     await db.ref(`/notifications/${recipientUid}`).push(notification);
 
     alert('Friend request sent!');
-}
-
-async function handleFriendRequest(senderUid, accepted) {
-    const myUid = currentUser.uid;
-
-    // Remove request and notification regardless of choice
-    await db.ref(`/requests/${myUid}/${senderUid}`).remove();
-    const notifSnapshot = await db.ref(`/notifications/${myUid}`).orderByChild('from').equalTo(senderUid).once('value');
-    if (notifSnapshot.exists()) {
-        const notifKey = Object.keys(notifSnapshot.val())[0];
-        await db.ref(`/notifications/${myUid}/${notifKey}`).remove();
-    }
-    
-    if (accepted) {
-        // Add each other to contacts
-        const contactData = { uid: senderUid, addedAt: firebase.database.ServerValue.TIMESTAMP };
-        await db.ref(`/contacts/${myUid}/${senderUid}`).set(contactData);
-        
-        const myContactData = { uid: myUid, addedAt: firebase.database.ServerValue.TIMESTAMP };
-        await db.ref(`/contacts/${senderUid}/${myUid}`).set(myContactData);
-    }
 }
 
 
@@ -1334,12 +1300,11 @@ async function initiateCall(partnerUid, type) {
     const answerRef = db.ref(`/calls/${partnerUid}/answer`);
     activeListeners.callAnswer = answerRef;
     answerRef.on('value', async snapshot => {
-        if (snapshot.exists()) {
+        if (snapshot.exists() && peerConnection.signalingState !== 'closed') {
             const answer = snapshot.val();
             await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
             document.getElementById('call-view-status').textContent = 'Connected';
             
-            // Listen for callee's ICE candidates
             listenForIceCandidates(partnerUid, 'callee');
             answerRef.off();
         }
@@ -1400,7 +1365,7 @@ function listenForIceCandidates(callPathUid, role) {
     activeListeners.iceCandidates = iceRef;
     
     iceRef.on('child_added', snapshot => {
-        if (snapshot.exists()) {
+        if (snapshot.exists() && peerConnection.signalingState !== 'closed') {
             peerConnection.addIceCandidate(new RTCIceCandidate(snapshot.val()));
         }
     });
@@ -1438,12 +1403,7 @@ function endCall() {
     document.getElementById('call-view').style.display = 'none';
     document.getElementById('local-video').srcObject = null;
     document.getElementById('remote-video').srcObject = null;
-
-    // Determine who to clean up and log
-    // This part can be complex; a simple approach is for both parties to clean up their relevant paths
-    // A robust solution would use a 'disconnect' or 'end' signal in the DB.
     
-    // For simplicity, the initiator cleans the full record
     const callRef = db.ref(`/calls/`); 
     callRef.orderByChild('callerId').equalTo(currentUser.uid).once('value').then(snap => {
         if(snap.exists()) {
@@ -1462,7 +1422,6 @@ function endCall() {
         }
     });
 
-    // Clean up listeners
     if (activeListeners.callAnswer) activeListeners.callAnswer.off();
     if (activeListeners.iceCandidates) activeListeners.iceCandidates.off();
 }
@@ -1477,10 +1436,10 @@ async function logCall(callerId, calleeId, type, status) {
         timestamp: firebase.database.ServerValue.TIMESTAMP
     };
 
-    // Log for caller
-    db.ref(`/callLogs/${callerId}`).push({ ...log, partner: { uid: calleeId, name: calleeProfile.name, emoji: calleeProfile.emoji } });
-    // Log for callee
-    db.ref(`/callLogs/${calleeId}`).push({ ...log, partner: { uid: callerId, name: callerProfile.name, emoji: callerProfile.emoji } });
+    if(callerProfile && calleeProfile) {
+        db.ref(`/callLogs/${callerId}`).push({ ...log, partner: { uid: calleeId, name: calleeProfile.name, emoji: calleeProfile.emoji } });
+        db.ref(`/callLogs/${calleeId}`).push({ ...log, partner: { uid: callerId, name: callerProfile.name, emoji: callerProfile.emoji } });
+    }
 }
 
 
